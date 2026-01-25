@@ -1,0 +1,57 @@
+# DeepSearch Tool Configuration
+# For deep research and web searching
+
+name: deepsearch
+description: "Deep research tool for comprehensive web searches"
+type: mcp_tool
+
+# MCP server configuration (adjust for your setup)
+mcp_config:
+  server: "deepsearch-server"  # MCP server name
+  # Or direct configuration:
+  # command: "npx"
+  # args: ["-y", "@anthropic/deepsearch-mcp"]
+
+# Rate limiting
+rate_limit:
+  calls_per_hour: 10
+  reason: "Deep searches are expensive and slow"
+
+# Usage guidelines
+usage:
+  when_to_use:
+    - "Researching a new topic or technology"
+    - "Finding existing solutions to problems"
+    - "Competitive analysis"
+    - "Failure analysis (what went wrong for others)"
+
+  when_not_to_use:
+    - "Quick factual lookups (use web_search instead)"
+    - "Reading specific documentation (use web_fetch)"
+    - "Searching the local codebase (use codebase_grep)"
+
+# Prompt templates for common research tasks
+templates:
+  competitive_analysis: |
+    Find existing solutions and approaches for: {topic}
+    Focus on:
+    - Open source implementations
+    - Commercial products
+    - Academic papers
+    - Blog posts with implementation details
+
+  failure_analysis: |
+    Find common problems, issues, and failures related to: {topic}
+    Focus on:
+    - "Common issues with..."
+    - "Problems when..."
+    - "Migration horror stories"
+    - Stack Overflow questions with negative scores
+
+  tooling_research: |
+    Research tools and libraries for: {topic}
+    Focus on:
+    - Official documentation
+    - Version compatibility
+    - Known limitations
+    - Best practices

@@ -1,0 +1,104 @@
+# Slipstream Utility Rules
+# Configuration for CLOCKWORK-derived utilities
+
+circuit_breaker:
+  # Prevent runaway agent conversations
+  thresholds:
+    no_progress_turns: 3          # Open circuit after N turns with no progress
+    same_error_turns: 5           # Open circuit after N turns with same error
+    half_open_threshold: 2        # Enter monitoring after N turns without progress
+
+  # What counts as "progress"
+  progress_indicators:
+    - artifacts_produced > 0
+    - new_information == true
+    - research_citations_added > 0
+    - plan_updated == true
+
+  # Auto-reset on context change
+  auto_reset_on_context_change: true
+
+hitl:
+  # Human gates at phase boundaries
+  mandatory_gates:
+    - phase: intake
+      gate_id: intake-confirmation
+      description: "Confirm task understanding before research begins"
+
+    - phase: powwow
+      gate_id: plan-approval
+      description: "Review and approve the implementation plan"
+
+    - phase: handoff
+      gate_id: final-review
+      description: "Final review before marking complete"
+
+  # Risk-based gating
+  risk_thresholds:
+    # Actions at these risk levels require gates
+    require_gate: [high, critical]
+
+    # Risk escalation rules
+    escalation:
+      code_change:
+        default: high
+        config_files: critical
+        security_sensitive: critical
+
+      external_api:
+        read_only: low
+        write_operations: critical
+
+      phase_transition:
+        default: high
+
+audit:
+  # What to log
+  log_events:
+    - agent_turn
+    - tool_call
+    - skill_applied
+    - phase_transition
+    - gate_created
+    - gate_resolved
+    - circuit_breaker_transition
+    - research_finding
+    - decision_made
+
+  # Log format
+  format:
+    include_timestamp: true
+    include_agent: true
+    include_phase: true
+    include_tools_used: true
+    include_skills_applied: true
+    include_citations: true
+
+  # Retention
+  retention:
+    max_events_per_session: 10000
+    archive_completed_sessions: true
+
+rate_limiter:
+  # Per-endpoint limits (calls per hour)
+  limits:
+    deepsearch: 10
+    web_fetch: 20
+    web_search: 15
+    llm_call: 100
+    codebase_grep: 50
+    file_read: 200
+
+  # Priority-based scaling
+  priority_multipliers:
+    low: 0.5
+    medium: 1.0
+    high: 2.0
+    critical: 3.0
+
+  # Backoff strategy
+  backoff:
+    strategy: exponential_with_jitter
+    base_delay_seconds: 1
+    max_delay_seconds: 60
+    jitter_factor: 0.2

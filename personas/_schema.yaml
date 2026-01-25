@@ -1,0 +1,76 @@
+# Persona Definition Schema
+# All persona files must conform to this structure
+
+schema_version: "1.0"
+
+required_fields:
+  - name           # Display name for the persona
+  - role           # Brief role description
+  - skills_required # Skills this persona must use
+  - voice          # How this persona communicates
+
+optional_fields:
+  - skills_optional # Skills available but not required
+  - tools_access    # Tools this persona can use
+  - defers_to       # Other personas this one defers to
+  - escalates_to    # Who to escalate issues to
+  - phase_focus     # Which workflow phases this persona is active in
+
+field_definitions:
+  name:
+    type: string
+    description: "Human-readable name for this persona"
+    example: "Game Designer"
+
+  role:
+    type: string
+    description: "One-line description of what this persona does"
+    example: "Designs game mechanics, systems, and player experiences"
+
+  skills_required:
+    type: array
+    items: string
+    description: "Skill files (without extension) this persona must apply"
+    example: ["deep_researcher", "planning_and_scoping"]
+
+  skills_optional:
+    type: array
+    items: string
+    description: "Skills available when relevant"
+    example: ["security_review"]
+
+  tools_access:
+    type: array
+    items: string
+    description: "Tool identifiers this persona can invoke"
+    example: ["deepsearch", "web_fetch", "codebase_grep"]
+
+  voice:
+    type: object
+    properties:
+      focus:
+        type: string
+        description: "What this persona prioritizes in discussions"
+      challenges:
+        type: string
+        description: "What this persona pushes back on"
+      defers_to:
+        type: array
+        items: string
+        description: "Topics where this persona defers to others"
+
+  phase_focus:
+    type: array
+    items: string
+    description: "Workflow phases where this persona is most active"
+    example: ["research", "powwow"]
+
+# Example minimal persona
+example:
+  name: "Example Persona"
+  role: "Does example things"
+  skills_required:
+    - deep_researcher
+  voice:
+    focus: "examples and demonstrations"
+    challenges: "unclear requirements"

@@ -1,0 +1,84 @@
+# Quick Fix Workflow
+# Abbreviated workflow for small, well-understood changes
+
+name: quick_fix
+description: >
+  Abbreviated workflow for small, well-understood changes.
+  Use for bug fixes, small tweaks, or tasks with clear scope.
+
+triggers:
+  task_complexity: [trivial, simple]
+  file_count: "1-3"
+  requires_research: false
+
+default_personas:
+  - gameplay_engineer
+
+phases:
+  - name: assess
+    description: "Quick assessment of the task"
+    hitl_gate: false
+
+    agents: [gameplay_engineer]
+
+    skills_enforced:
+      - requirements_clarification
+
+    output: task_assessment
+
+    checklist:
+      - "Task is well-understood"
+      - "Scope is limited (<3 files)"
+      - "No architectural changes required"
+      - "No external dependencies involved"
+
+    # If any check fails, escalate to standard workflow
+    escalation_trigger:
+      condition: "any_check_fails"
+      action: "switch_to_standard_workflow"
+
+  - name: implement
+    description: "Implement the fix"
+    hitl_gate: false
+
+    agents: [gameplay_engineer]
+
+    skills_enforced:
+      - security_review
+      - test_strategy
+
+    moral_gate: required
+
+    output: implementation
+
+    circuit_breaker:
+      max_turns: 5
+      stall_threshold: 2
+
+  - name: verify
+    description: "Verify the fix works"
+    hitl_gate: true
+    gate_id: quick-fix-review
+    gate_description: "Verify fix is correct and complete"
+
+    agents: [gameplay_engineer]
+
+    skills_enforced:
+      - test_strategy
+
+    output: verification_report
+
+    checklist:
+      - "Fix addresses the issue"
+      - "No regressions introduced"
+      - "Tests pass"
+
+# Escalation rules
+escalation:
+  triggers:
+    - "Scope discovered to be larger than expected"
+    - "Architectural changes needed"
+    - "Multiple personas required"
+    - "Research needed to understand problem"
+
+  action: "Convert to standard workflow, preserving context"

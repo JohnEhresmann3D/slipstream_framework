@@ -1,0 +1,231 @@
+# Slipstream Framework Configuration
+# Main configuration file for the workforce orchestration system
+
+version: "1.0"
+name: "Slipstream Framework"
+
+# Framework philosophy
+philosophy: |
+  Slipstream is a protocol for agent collaboration, not a cognitive runtime.
+  The intelligence stays in the models. The framework handles:
+  - Coordination between specialized personas
+  - Grounding through research before action
+  - Governance through constitutional constraints
+  - Safety through human-in-the-loop gates
+
+# Directory structure
+paths:
+  constitution: "./constitution"
+  constitution_roles: "./constitution/roles"
+  personas: "./personas"
+  skills:
+    core: "./skills/core"
+    quality: "./skills/quality"
+    domain: "./skills/domain"
+  workflows: "./workflows"
+  tools: "./tools"
+  utilities: "./utilities"
+  sessions: "./sessions"
+
+# Default workflow
+defaults:
+  workflow: "standard"
+  personas:
+    - producer
+    - gameplay_engineer
+
+# ============================================================
+# CONSTITUTION HIERARCHY
+# ============================================================
+# All personas are governed by a two-tier constitution system:
+# 1. Primary Constitution (supreme authority)
+# 2. Role Constitution (role-specific extensions)
+#
+# ENFORCEMENT: Before any action, each persona MUST:
+# 1. Load the primary constitution
+# 2. Load their role-specific constitution
+# 3. Apply research mandate from role constitution
+# 4. Proceed only after constitutions are internalized
+# ============================================================
+constitution:
+  # Primary constitution - supreme authority for all roles
+  primary:
+    file: "AI_Engineer_Constitution.md"
+    path: "./constitution/AI_Engineer_Constitution.md"
+    authority: supreme
+    enforcement: strict
+
+  # Role-specific constitutions - extensions under primary authority
+  roles:
+    producer:
+      file: "producer_constitution.md"
+      path: "./constitution/roles/producer_constitution.md"
+    game_designer:
+      file: "game_designer_constitution.md"
+      path: "./constitution/roles/game_designer_constitution.md"
+    gameplay_engineer:
+      file: "gameplay_engineer_constitution.md"
+      path: "./constitution/roles/gameplay_engineer_constitution.md"
+    qa_engineer:
+      file: "qa_engineer_constitution.md"
+      path: "./constitution/roles/qa_engineer_constitution.md"
+    sound_designer:
+      file: "sound_designer_constitution.md"
+      path: "./constitution/roles/sound_designer_constitution.md"
+
+  # Conflict resolution
+  precedence:
+    - primary_constitution    # Always wins
+    - role_constitution       # Within primary constraints
+    - skill_rules             # Within constitution constraints
+
+  # Moral gate enforcement
+  moral_gate:
+    when: before_code_output
+    enforcement: strict
+    failure_action: stop_and_surface
+
+# ============================================================
+# RESEARCH MANDATE
+# ============================================================
+# Research is NOT optional. Every role constitution includes
+# specific triggers that REQUIRE research before action.
+# ============================================================
+research:
+  # Research is mandatory Phase 0 for all personas
+  mandatory: true
+  phase: 0
+
+  # Default tools for research
+  tools:
+    primary: deepsearch
+    fallback: [web_search, web_fetch]
+
+  # Rate limiting for research tools
+  rate_limits:
+    deepsearch: 10  # per hour
+    web_search: 15
+    web_fetch: 20
+
+  # Research must produce
+  required_outputs:
+    - citations
+    - confidence_level
+    - gaps_identified
+
+# Skill governance (from Constitution)
+skill_governance:
+  # Phase 0 is always mandatory
+  phase_0_mandatory:
+    - deep_researcher
+
+  # Selection heuristic
+  selection:
+    always: [planning_and_scoping]
+    if_ambiguous: [requirements_clarification]
+    if_external_deps: [dependency_and_version_verification]
+    if_user_data: [security_review, reliability_and_failure_modes]
+    if_code_change: [test_strategy, documentation_handoff]
+    if_refactor: [code_review_and_refactor_integrity]
+
+  # Precedence when skills conflict
+  precedence:
+    1: "Safety/Security"
+    2: "Correctness/Verification"
+    3: "Maintainability"
+    4: "Speed/Convenience"
+
+  # Audit trail required
+  audit: true
+  audit_format: "Skills applied: {skills}"
+
+# Utility configuration
+utilities:
+  circuit_breaker:
+    enabled: true
+    config_file: "./utilities/rules.yaml"
+
+  hitl:
+    enabled: true
+    config_file: "./utilities/rules.yaml"
+
+  audit:
+    enabled: true
+    config_file: "./utilities/rules.yaml"
+
+  rate_limiter:
+    enabled: true
+    config_file: "./utilities/rules.yaml"
+
+# Session management
+sessions:
+  storage: "./sessions"
+  format: "json"
+  preserve_context: true
+  max_context_tokens: 100000
+
+# ============================================================
+# PERSONA LOADING PROTOCOL
+# ============================================================
+# When a persona is activated, the orchestrator MUST:
+# 1. Load persona definition from ./personas/{name}.yaml
+# 2. Load primary constitution from ./constitution/AI_Engineer_Constitution.md
+# 3. Load role constitution from ./constitution/roles/{name}_constitution.md
+# 4. Present constitutions to the model BEFORE any task
+# 5. Verify research mandate triggers are active
+# ============================================================
+persona_loading:
+  protocol:
+    - load_persona_definition
+    - load_primary_constitution
+    - load_role_constitution
+    - verify_research_triggers
+    - activate_persona
+
+  constitution_prompt_template: |
+    BEFORE PROCEEDING, YOU MUST READ AND INTERNALIZE:
+
+    === PRIMARY CONSTITUTION (SUPREME AUTHORITY) ===
+    {primary_constitution}
+
+    === ROLE CONSTITUTION ({role_name}) ===
+    {role_constitution}
+
+    You are bound by these constitutions. Proceed only after internalizing them.
+    Research mandate triggers from your role constitution are ACTIVE.
+
+# Model configuration (agent-agnostic)
+models:
+  # These are examples - configure for your setup
+  default:
+    provider: "anthropic"
+    model: "claude-sonnet-4-20250514"
+
+  research:
+    provider: "anthropic"
+    model: "claude-sonnet-4-20250514"
+    # Deep research can use a capable model
+
+  execution:
+    provider: "anthropic"
+    model: "claude-sonnet-4-20250514"
+    # Code execution needs precision
+
+# MCP servers (configure your available servers)
+mcp_servers:
+  # Example configuration - adjust for your setup
+  # deepsearch:
+  #   command: "npx"
+  #   args: ["-y", "@anthropic/deepsearch-mcp"]
+  #
+  # starcrash-assets:
+  #   command: "python"
+  #   args: ["./mcp/starcrash_assets.py"]
+
+# Logging
+logging:
+  level: "info"
+  format: "json"
+  output:
+    - stdout
+    - file: "./logs/slipstream.log"

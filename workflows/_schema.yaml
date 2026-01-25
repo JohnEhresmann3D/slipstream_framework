@@ -1,0 +1,78 @@
+# Workflow Definition Schema
+# All workflow files must conform to this structure
+
+schema_version: "1.0"
+
+required_fields:
+  - name           # Workflow identifier
+  - description    # What this workflow is for
+  - phases         # Ordered list of phases
+
+optional_fields:
+  - default_personas  # Personas assigned by default
+  - triggers          # When to use this workflow
+  - circuit_breaker   # Override default circuit breaker settings
+
+field_definitions:
+  name:
+    type: string
+    description: "Unique identifier for this workflow"
+    example: "standard"
+
+  description:
+    type: string
+    description: "When to use this workflow"
+    example: "Standard development workflow for feature implementation"
+
+  phases:
+    type: array
+    items:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+          description: "Phase identifier"
+        description:
+          type: string
+          description: "What happens in this phase"
+        hitl_gate:
+          type: boolean
+          description: "Whether human approval is required to exit this phase"
+        agents:
+          type: array
+          description: "Which personas are active (or 'all_assigned')"
+        skills_enforced:
+          type: array
+          description: "Skills that must be applied in this phase"
+        circuit_breaker:
+          type: object
+          description: "Phase-specific circuit breaker settings"
+        output:
+          type: string
+          description: "Expected output artifact from this phase"
+        mode:
+          type: string
+          enum: [sequential, collaborative, parallel]
+          description: "How agents interact in this phase"
+
+  triggers:
+    type: object
+    description: "Conditions that suggest using this workflow"
+    properties:
+      task_complexity:
+        type: string
+        enum: [trivial, simple, moderate, complex]
+      file_count:
+        type: string
+        description: "Expected number of files affected"
+      requires_research:
+        type: boolean
+
+# Phases reference
+standard_phases:
+  - intake      # Understand the task
+  - research    # Gather context
+  - powwow      # Debate and plan
+  - execution   # Implement
+  - handoff     # Review and complete

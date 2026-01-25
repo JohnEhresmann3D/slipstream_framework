@@ -1,0 +1,173 @@
+# Standard Development Workflow
+# Full 5-phase workflow for feature implementation
+
+name: standard
+description: >
+  Standard development workflow for feature implementation.
+  Use for any non-trivial task that benefits from research and planning.
+
+triggers:
+  task_complexity: [moderate, complex]
+  file_count: ">3"
+  requires_research: true
+
+default_personas:
+  - producer
+  - gameplay_engineer
+
+phases:
+  - name: intake
+    description: "Understand the task and clarify requirements"
+    hitl_gate: true
+    gate_id: intake-confirmation
+    gate_description: "Confirm task understanding before research begins"
+
+    agents: [producer]
+
+    skills_enforced:
+      - requirements_clarification
+
+    output: task_statement
+
+    checklist:
+      - "Task goal clearly stated"
+      - "Acceptance criteria defined"
+      - "Ambiguities identified"
+      - "Assumptions labeled"
+      - "Personas assigned for remaining phases"
+
+  - name: research
+    description: "Gather context before acting"
+    hitl_gate: false
+
+    agents: all_assigned
+
+    skills_enforced:
+      - deep_researcher
+
+    circuit_breaker:
+      max_turns: 10
+      stall_threshold: 3
+
+    output: research_artifacts
+
+    mode: parallel
+
+    research_tracks:
+      - competitive_analysis: "How have others solved this?"
+      - failure_analysis: "What commonly goes wrong?"
+      - tooling_deep_dive: "What tools/APIs are needed?"
+      - codebase_analysis: "How does existing code handle this?"
+
+    standards:
+      - "Every claim must have a citation"
+      - "Uncertainties explicitly stated"
+      - "Gaps identified for pow-wow discussion"
+
+  - name: powwow
+    description: "Debate findings and refine plan"
+    hitl_gate: true
+    gate_id: plan-approval
+    gate_description: "Review and approve the implementation plan"
+
+    agents: all_assigned
+
+    skills_enforced:
+      - planning_and_scoping
+      - requirements_clarification
+
+    output: approved_plan
+
+    mode: collaborative
+
+    discussion_protocol:
+      rounds:
+        - name: findings_share
+          description: "Each agent presents research findings"
+
+        - name: challenge
+          description: "Agents challenge assumptions and identify gaps"
+
+        - name: synthesis
+          description: "Produce unified plan with assigned tasks"
+
+        - name: risk_review
+          description: "Identify risks and mitigation strategies"
+
+    plan_format:
+      required_sections:
+        - goal: "One sentence goal"
+        - constraints: "Platform, language, performance, security"
+        - approach: "Step-by-step implementation plan"
+        - risks: "Identified risks and mitigations"
+        - acceptance_criteria: "How we know it's done"
+        - task_assignments: "Who does what"
+
+  - name: execution
+    description: "Implement the plan"
+    hitl_gate: false
+
+    agents: [gameplay_engineer, sound_designer]  # Implementation roles
+
+    skills_enforced:
+      - security_review
+      - test_strategy
+      - code_review_and_refactor_integrity
+
+    moral_gate: required
+
+    output: implementation
+
+    mode: sequential
+
+    execution_protocol:
+      - "Apply moral gate before any code change"
+      - "Write tests before or with implementation"
+      - "Document non-obvious decisions"
+      - "Flag deviations from plan"
+      - "Escalate blockers immediately"
+
+    circuit_breaker:
+      max_turns: 20
+      stall_threshold: 5
+
+  - name: handoff
+    description: "Review, document, and complete"
+    hitl_gate: true
+    gate_id: final-review
+    gate_description: "Final review before marking complete"
+
+    agents: [producer, qa_engineer]
+
+    skills_enforced:
+      - documentation_handoff
+      - test_strategy
+
+    output: completion_report
+
+    checklist:
+      - "All acceptance criteria verified"
+      - "Tests passing"
+      - "Documentation complete"
+      - "No critical issues open"
+      - "Handoff notes written"
+
+# Transition rules
+transitions:
+  intake_to_research:
+    requires: [hitl_gate_approved]
+    creates: [session_context]
+
+  research_to_powwow:
+    requires: [research_artifacts_exist]
+    auto_transition: true
+
+  powwow_to_execution:
+    requires: [hitl_gate_approved, plan_exists]
+
+  execution_to_handoff:
+    requires: [implementation_complete]
+    auto_transition: true
+
+  handoff_to_complete:
+    requires: [hitl_gate_approved]

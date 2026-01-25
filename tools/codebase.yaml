@@ -1,0 +1,64 @@
+# Codebase Tools Configuration
+# For searching and reading local code
+
+name: codebase
+description: "Tools for interacting with the local codebase"
+type: native
+
+tools:
+  codebase_grep:
+    description: "Search for patterns in code"
+    rate_limit:
+      calls_per_hour: 50
+
+    usage:
+      when_to_use:
+        - "Finding where a function/class is defined"
+        - "Finding usages of a symbol"
+        - "Searching for patterns across files"
+
+      tips:
+        - "Use file type filters to narrow results"
+        - "Use regex for complex patterns"
+        - "Combine with file_read for context"
+
+  codebase_read:
+    description: "Read file contents"
+    rate_limit:
+      calls_per_hour: 200
+
+    usage:
+      when_to_use:
+        - "Reading implementation details"
+        - "Understanding existing code"
+        - "Reviewing before changes"
+
+  codebase_edit:
+    description: "Make changes to code"
+    rate_limit:
+      calls_per_hour: 100
+
+    usage:
+      when_to_use:
+        - "Implementing features"
+        - "Fixing bugs"
+        - "Refactoring"
+
+      constraints:
+        - "Requires moral_gate check"
+        - "Must have read file first"
+        - "Changes must be audited"
+
+# Codebase exploration patterns
+exploration_patterns:
+  find_entry_point: |
+    Look for: main.*, index.*, app.*, __main__.py
+
+  find_config: |
+    Look for: config.*, settings.*, *.config.*, .env*
+
+  find_tests: |
+    Look for: test_*, *_test.*, tests/, __tests__/
+
+  find_types: |
+    Look for: types.*, interfaces.*, *.d.ts, models.*

@@ -1,0 +1,81 @@
+# Research Only Workflow
+# For exploration and information gathering without implementation
+
+name: research_only
+description: >
+  Research workflow for exploration and information gathering.
+  Use when the goal is understanding, not implementation.
+
+triggers:
+  task_type: [research, exploration, analysis, comparison]
+  requires_implementation: false
+
+default_personas:
+  - producer
+  - game_designer
+
+phases:
+  - name: scope
+    description: "Define research questions and scope"
+    hitl_gate: true
+    gate_id: research-scope
+    gate_description: "Confirm research questions before starting"
+
+    agents: [producer]
+
+    skills_enforced:
+      - requirements_clarification
+      - planning_and_scoping
+
+    output: research_brief
+
+    format:
+      primary_question: "Main question to answer"
+      sub_questions: "Supporting questions"
+      success_criteria: "How we know research is complete"
+      out_of_scope: "What we're NOT researching"
+
+  - name: investigate
+    description: "Deep research on the questions"
+    hitl_gate: false
+
+    agents: all_assigned
+
+    skills_enforced:
+      - deep_researcher
+
+    circuit_breaker:
+      max_turns: 15
+      stall_threshold: 4
+
+    output: research_findings
+
+    mode: parallel
+
+    standards:
+      - "Every claim cited"
+      - "Multiple sources where possible"
+      - "Contradictions noted"
+      - "Gaps identified"
+
+  - name: synthesize
+    description: "Synthesize findings into actionable insights"
+    hitl_gate: true
+    gate_id: research-review
+    gate_description: "Review research findings and conclusions"
+
+    agents: all_assigned
+
+    skills_enforced:
+      - planning_and_scoping
+
+    output: research_report
+
+    mode: collaborative
+
+    report_format:
+      executive_summary: "Key findings in 2-3 sentences"
+      detailed_findings: "Per research question"
+      recommendations: "Actionable next steps"
+      open_questions: "What we still don't know"
+      sources: "All citations"
