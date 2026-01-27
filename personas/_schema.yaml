@@ -16,6 +16,8 @@ optional_fields:
   - escalates_to    # Who to escalate issues to
   - phase_focus     # Which workflow phases this persona is active in
 
+
+
 field_definitions:
   name:
     type: string
@@ -44,6 +46,17 @@ field_definitions:
     items: string
     description: "Tool identifiers this persona can invoke"
     example: ["deepsearch", "web_fetch", "codebase_grep"]
+
+    # ============================================================
+# TOOLING AWARENESS (REQUIRED)
+# ============================================================
+
+tooling_awareness:
+  evaluate_existing_tools: true
+  prefer_existing_tools: true
+  suggest_tooling_when_beneficial: true
+  prohibit_assumed_tooling: true
+
 
   voice:
     type: object
