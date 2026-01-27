@@ -177,6 +177,154 @@ Human oversight remains mandatory regardless of cognitive style.
 
 ---
 
+---
+
+## Worked Example: Same Task, Different Producer Personas
+
+This section demonstrates how **personality configuration materially affects output**, even when role, skills, constitution, and workflow are held constant.
+
+The goal is not to show one approach as superior, but to illustrate **cognitive fit**.
+
+---
+
+## Task Definition (Identical Input)
+
+**Problem Statement**  
+Design an initial plan for open-sourcing the Slipstream Framework, including documentation scope and release sequencing.
+
+**Constraints**
+- Academic tone
+- Open but values-driven license
+- Target audience: AI power users and knowledge workers
+
+**Workflow**
+Standard (Intake → Research → Design → Execution → Review)
+
+---
+
+## Producer A Output — Creative Systems Producer
+
+### Intake Summary
+The problem space contains multiple overlapping goals: technical clarity, philosophical positioning, and community signaling. Premature scope lock risks obscuring emergent structure.
+
+### Proposed Approach
+Rather than committing immediately to a single documentation hierarchy, this release should be treated as an exploratory system definition exercise.
+
+Suggested parallel tracks:
+1. Core philosophical documentation
+2. Practical usage examples
+3. License positioning and values articulation
+
+These tracks can evolve concurrently and be reconciled once patterns emerge.
+
+### Identified Opportunities
+- Position Slipstream as a *cognitive framework*, not a tool
+- Use Personas as an entry point to differentiate from agent frameworks
+- Leverage worked examples to teach by demonstration
+
+### Risks Acknowledged
+- Scope ambiguity early in the process
+- Potential for overproduction of artifacts
+
+### Mitigation Strategy
+Introduce provisional milestones with explicit review gates, allowing certain documents to collapse or merge as understanding improves.
+
+### Initial Artifacts Proposed
+- Draft philosophy document (non-final)
+- Persona comparison example
+- License options matrix
+- Blog outline with multiple narrative angles
+
+> “The goal of this phase is to discover the correct structure, not assume it.”
+
+---
+
+## Producer B Output — Process-Driven Delivery Producer
+
+### Intake Summary
+The task requires a defined release plan with clear deliverables to avoid scope creep and ensure timely publication.
+
+### Proposed Approach
+The open-source release should follow a fixed documentation structure with clearly defined artifacts and ownership.
+
+Recommended sequence:
+1. License selection
+2. Core documentation
+3. Examples
+4. Blog publication
+
+Each phase should conclude with approval before proceeding.
+
+### Identified Priorities
+- Lock documentation structure early
+- Minimize exploratory divergence
+- Ensure materials are publication-ready
+
+### Risks Acknowledged
+- Delays due to iterative rework
+- Confusion among contributors if structure changes
+
+### Mitigation Strategy
+Time-box exploratory work and require scope confirmation before drafting begins.
+
+### Initial Artifacts Proposed
+- Finalized README
+- LICENSE.md
+- GETTING_STARTED.md
+- PERSONAS.md
+- Single launch blog post
+
+> “We should decide what Slipstream is before demonstrating how it can be used.”
+
+---
+
+## Comparative Analysis
+
+| Dimension | Creative Producer | Process Producer |
+|--------|------------------|------------------|
+| Intake framing | Exploratory | Deterministic |
+| Scope definition | Emergent | Predefined |
+| Risk posture | Accepts ambiguity | Minimizes variance |
+| Planning style | Parallel discovery | Sequential execution |
+| Artifact strategy | Many provisional drafts | Few finalized documents |
+| Decision timing | Deferred | Early |
+
+Both approaches satisfy the same constraints and constitutional requirements.  
+The divergence reflects **cognitive posture**, not correctness.
+
+---
+
+## Interpretation
+
+- The **Creative Systems Producer** is well-suited for:
+  - Novel domains
+  - Early-stage frameworks
+  - High-ambiguity problem spaces
+
+- The **Process-Driven Producer** is well-suited for:
+  - Established domains
+  - Delivery-critical work
+  - Organizational standardization
+
+Slipstream allows teams to **intentionally select the cognitive style** best suited to the problem at hand.
+
+---
+
+## Key Insight
+
+Without explicit personality configuration, these differences would appear arbitrary.
+
+Slipstream makes them:
+- Predictable
+- Intentional
+- Reviewable
+- Adjustable
+
+This is the core value of treating personality as a first-class system component.
+
+---
+
+
 ## Summary
 
 Personality in Slipstream is not roleplay.  
