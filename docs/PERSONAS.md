@@ -1,175 +1,185 @@
-Personas as Cognitive Lenses
+# Personas
 
-In Slipstream, a Persona is not a character or simulation of identity.
-It is a configured cognitive lens that influences:
+## Personas as Cognitive Lenses
 
-Reasoning style
+In Slipstream, a **Persona** is not a character, roleplay construct, or simulated identity.  
+A Persona is a **configured cognitive lens** that influences how an LLM reasons, communicates, and frames decisions.
 
-Risk tolerance
+Personas affect:
 
-Communication patterns
+- Reasoning style
+- Risk tolerance
+- Communication patterns
+- Decision framing
+- Bias toward creativity versus rigor
 
-Decision framing
+Two Personas may share the same **role** and **skills**, yet produce meaningfully different outputs due to differences in personality configuration. This distinction is intentional and foundational to Slipstream.
 
-Bias toward creativity vs rigor
+---
 
-Two Personas may share the same role and same skills, yet produce meaningfully different outputs based on personality configuration.
+## Persona ≠ Skill ≠ Constitution
 
-This distinction is intentional.
+Slipstream separates concerns explicitly:
 
-Persona ≠ Skill ≠ Constitution
-Component	Purpose
-Persona	How thinking is expressed
-Skill	What the Persona is allowed to do
-Constitution	What the Persona must not violate
+| Component | Purpose |
+|--------|--------|
+| **Persona** | How thinking is expressed |
+| **Skill** | What the Persona is allowed to do |
+| **Constitution** | What the Persona must not violate |
 
-Personality operates within Skills and Constitutions, never outside them.
+Personality operates **within** Skills and Constitutions and cannot override them.
 
-Personality as a Tunable Parameter
+---
 
-Slipstream encourages experimentation with personality within safe bounds.
+## Personality as a Tunable Cognitive Parameter
+
+Slipstream treats personality as a **controlled variable**, not a novelty feature.
 
 Personality may influence:
 
-Divergence vs convergence
+- Divergent vs convergent reasoning
+- Deference to precedent
+- Appetite for novelty
+- Strictness of interpretation
+- Comfort with ambiguity
+- Risk posture
 
-Deference to precedent
+Personality **does not** override:
 
-Appetite for novelty
+- Workflow ordering
+- Human-in-the-Loop (HITL) requirements
+- Ethical or constitutional constraints
+- Skill boundaries
 
-Strictness of interpretation
+This allows creativity without loss of accountability.
 
-Comfort with ambiguity
+---
 
-Personality does not override:
+## Example: Producer Personas With Divergent Cognitive Styles
 
-Workflow order
+The following example demonstrates how altering *personality alone*—while holding role, skills, constitution, and workflow constant—produces materially different outputs.
 
-HITL requirements
+---
 
-Ethical constraints
+### Shared Constraints (Constant)
 
-Skill boundaries
+Both Personas share:
 
-🧪 Example: Producer Personas With Different Cognitive Styles
-Shared Constraints (Constant)
-
-Both Personas below share:
-
-Role: Producer
-
-Skills: Project planning, risk assessment, stakeholder communication
-
-Constitution: Enforces HITL, scope clarity, accountability
-
-Workflow: Standard
+- **Role:** Producer  
+- **Skills:** Project planning, risk assessment, stakeholder communication  
+- **Constitution:** Enforces HITL gates, scope clarity, accountability  
+- **Workflow:** Standard (Intake → Research → Design → Execution → Review)
 
 Only personality parameters differ.
 
-🧩 Producer A — Creative Systems Producer
+---
 
-Background framing
+## Producer A — Creative Systems Producer
 
-PMP-certified
+### Background Framing
+- PMP-certified
+- Experience in creative technology environments
+- Comfortable operating under ambiguity
+- Optimizes for optionality and discovery
 
-Experience in creative technology teams
+### Personality Configuration
+- Exploratory reasoning
+- Flexible interpretation of requirements
+- Encourages reframing problems
+- Accepts provisional or evolving plans
 
-Comfortable with ambiguity
+### Behavioral Tendencies
+- Surfaces multiple viable approaches
+- Explores both risks and opportunities
+- Defers irreversible decisions until patterns emerge
 
-Optimizes for optionality and discovery
+### Sample Output Style
+> “There are at least three viable ways to approach this. Before locking scope, it may be worth testing assumptions in parallel and allowing one path to collapse naturally.”
 
-Personality Configuration
+---
 
-Exploratory reasoning
+## Producer B — Process-Driven Delivery Producer
 
-Flexible interpretation of requirements
+### Background Framing
+- PMP + SCRUM certified
+- Enterprise delivery experience
+- High tolerance for structure
+- Optimizes for predictability and execution certainty
 
-Encourages reframing problems
+### Personality Configuration
+- Convergent reasoning
+- Strong adherence to established process
+- Bias toward early scope lock
+- Minimizes variance and uncertainty
 
-Accepts provisional plans
+### Behavioral Tendencies
+- Narrows options quickly
+- Prefers precedent-backed decisions
+- Emphasizes timelines, milestones, and deliverables
 
-Behavioral Tendencies
+### Sample Output Style
+> “Before proceeding, we need a locked scope, acceptance criteria, and a delivery timeline. Exploratory work should be time-boxed or deferred.”
 
-Suggests multiple viable paths
+---
 
-Surfaces non-obvious risks and opportunities
+## Observed Output Differences
 
-Will defer final decisions until patterns emerge
+| Dimension | Creative Producer | Process Producer |
+|--------|------------------|------------------|
+| Problem framing | Expansive | Narrow |
+| Risk handling | Explores upside | Minimizes variance |
+| Decision timing | Deferred | Early |
+| Language | Hypothesis-driven | Directive |
+| Output artifacts | Multiple drafts | Single authoritative plan |
 
-Sample Output Style
+Both outputs are valid. The difference is **fit for context**, not correctness.
 
-“There are at least three viable ways to approach this. Before locking scope, it may be worth testing assumptions in parallel and allowing one path to collapse naturally.”
+---
 
-📋 Producer B — Process-Driven Delivery Producer
+## Why Personality Matters
 
-Background framing
-
-PMP + SCRUM certified
-
-Enterprise delivery experience
-
-High tolerance for structure
-
-Optimizes for predictability and execution
-
-Personality Configuration
-
-Convergent reasoning
-
-Strong adherence to process
-
-Bias toward early scope lock
-
-Minimizes variance
-
-Behavioral Tendencies
-
-Narrows options quickly
-
-Prefers precedent-backed decisions
-
-Emphasizes timelines and deliverables
-
-Sample Output Style
-
-“Before proceeding, we need a locked scope, acceptance criteria, and a delivery timeline. Exploratory work should be time-boxed or deferred.”
-
-🔍 Observed Differences (Same Task, Same Skills)
-Dimension	Creative Producer	Process Producer
-Problem framing	Expansive	Narrow
-Risk handling	Explores upside	Minimizes variance
-Decision timing	Deferred	Early
-Language	Hypothesis-driven	Directive
-Output artifacts	Multiple drafts	Single authoritative plan
-
-Importantly, both outputs are valid — the difference lies in fit, not correctness.
-
-Why This Matters
-
-Many AI frameworks treat personality as superficial. Slipstream treats it as a controllable cognitive variable.
+Many AI frameworks treat personality as superficial or cosmetic. Slipstream treats personality as a **first-class cognitive control surface**.
 
 This enables:
 
-Tailoring agents to organizational culture
+- Matching reasoning style to problem domain
+- Adapting agents to organizational culture
+- Avoiding one-size-fits-all cognition
+- Making AI collaboration feel natural rather than mechanical
 
-Matching reasoning style to problem domain
+Personality influences *how* reasoning unfolds, not *what* is allowed.
 
-Avoiding one-size-fits-all cognition
+---
 
-Making AI collaboration feel natural, not mechanical
-
-Design Guidance
+## Design Guidance
 
 When defining Personas:
 
-Keep Skills strict
+- Keep **Skills** strict and explicit
+- Keep **Constitutions** immutable
+- Treat **Personality** as adjustable and intentional
 
-Keep Constitution immutable
+This mirrors real-world teams: two equally qualified professionals may approach the same problem differently—and both may be correct.
 
-Treat Personality as adjustable
+Slipstream makes that distinction explicit and inspectable.
 
-This mirrors human teams:
+---
 
-Two equally qualified professionals can approach the same problem very differently — and both can be correct.
+## Human-in-the-Loop Considerations
 
-Slipstream makes that explicit.
+Changes to personality configuration should be:
+
+- Intentional
+- Documented
+- Reviewed when output divergence is unexpected
+
+Human oversight remains mandatory regardless of cognitive style.
+
+---
+
+## Summary
+
+Personality in Slipstream is not roleplay.  
+It is a deliberate, bounded mechanism for shaping reasoning behavior while preserving accountability, safety, and rigor.
+
+This enables agents that both **perform better** and **feel better to work with**.
