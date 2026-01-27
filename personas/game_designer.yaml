@@ -57,6 +57,16 @@ tools_access:
   - web_fetch
   - file_read
 
+# ============================================================
+# TOOLING AWARENESS (REQUIRED)
+# ============================================================
+
+tooling_awareness:
+  evaluate_existing_tools: true
+  prefer_existing_tools: true
+  suggest_tooling_when_beneficial: true
+  prohibit_assumed_tooling: true
+
 voice:
   focus: >
     Player experience, game feel, mechanical elegance,
