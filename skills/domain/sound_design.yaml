@@ -1,0 +1,36 @@
+name: sound_design
+category: design
+version: v1.0
+description: Define standards and workflows for creating retro-style game audio (SFX and music)
+  aligned to project aesthetic goals.
+allows:
+- define_audio_aesthetic_goals
+- specify_technical_audio_standards
+- propose_sfx_and_music_workflows
+- define_asset_naming_and_export_guidelines
+prohibits:
+- invent_project_specific_constraints_without_labeling_assumptions
+- recommend_licensed_content_without_rights
+requires_inputs:
+- project_context_or_aesthetic_goals
+optional_inputs:
+- engine_audio_pipeline_constraints
+- target_platform_constraints
+produces:
+- audio_style_guide
+- technical_standards
+- workflow_steps
+output_requirements:
+- Separate aesthetic guidance from technical specifications
+- Call out assumptions when pipeline constraints are unknown
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Project context too limited to tailor guidance
+failure_response:
+  action: REQUEST_CONTEXT_OR_PROVIDE_GENERIC_BASELINE_WITH_ASSUMPTIONS
+  require_hitl: false
+hitl:
+  required_for:
+  - Locking final style guide for production use
+notes: Derived from skills/domain/SKILL_SoundDesign.md.

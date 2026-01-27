@@ -1,0 +1,36 @@
+name: test_strategy
+category: validation
+version: v1.0
+description: Define test strategy for features and bug fixes, emphasizing behavior-locking tests
+  and appropriate pyramid coverage.
+allows:
+- recommend_test_pyramid_distribution
+- propose_unit_integration_e2e_cases
+- identify_hard_to_test_areas_and_refactor_suggestions
+- enumerate_regressions_to_watch
+prohibits:
+- claim_tests_exist_or_pass_without_evidence
+- omit_regression_considerations_for_bug_fixes
+requires_inputs:
+- feature_or_bug_description
+optional_inputs:
+- existing_test_harness_details
+- runtime_constraints
+produces:
+- test_pyramid_recommendation
+- test_cases
+- regression_checklist
+output_requirements:
+- Provide example test cases as bullets
+- Call out unit vs integration vs e2e recommendations
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Insufficient feature details to propose tests
+failure_response:
+  action: REQUEST_CLARIFICATION_OR_PROVIDE_GENERIC_TEST_CHECKLIST
+  require_hitl: false
+hitl:
+  required_for:
+  - Approving release readiness based on tests
+notes: Derived from skills/quality/SKILL_TestStrategy.md.

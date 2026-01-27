@@ -1,0 +1,43 @@
+name: planning_and_scoping
+category: planning
+version: v1.0
+description: Translate non-trivial requests into an executable plan with constraints, acceptance
+  criteria, and risks.
+allows:
+- restate_goal_concisely
+- enumerate_constraints
+- define_acceptance_criteria
+- outline_stepwise_approach
+- identify_risks_and_unknowns
+- timebox_or_phase_work
+prohibits:
+- proceed_without_acceptance_criteria_for_nontrivial_work
+- hide_risks_or_unknowns
+- skip_required_research_when_claims_are_uncertain
+requires_inputs:
+- problem_statement
+optional_inputs:
+- platform_language_perf_security_constraints
+- timeline_or_scope_limits
+produces:
+- plan
+- constraints_list
+- acceptance_criteria
+- risks_and_unknowns
+output_requirements:
+- Plan must be expressed as ordered steps or bullets
+- Constraints must be explicit
+- Acceptance criteria must be testable
+- Risks/unknowns must be surfaced with mitigation or questions
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Request is too ambiguous to plan safely
+- Critical constraints are missing
+failure_response:
+  action: ESCALATE_OR_REQUEST_CLARIFICATION
+  require_hitl: false
+hitl:
+  required_for:
+  - Scope lock and execution start for non-trivial work
+notes: Derived from skills/core/SKILL_PlanningAndScoping.md; preserves existing process guidance.

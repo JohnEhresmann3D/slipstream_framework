@@ -1,0 +1,37 @@
+name: reliability_and_failure_modes
+category: validation
+version: v1.0
+description: Identify failure modes and propose handling strategies for systems involving external
+  dependencies, retries, and state.
+allows:
+- enumerate_failure_modes
+- define_timeouts_retries_backoff_idempotency
+- define_observability_plan
+- recommend_graceful_degradation
+- surface_data_integrity_invariants
+prohibits:
+- assume_networks_or_services_are_reliable
+- omit_observability_for_production_paths
+requires_inputs:
+- system_description
+optional_inputs:
+- slo_requirements
+- infrastructure_constraints
+produces:
+- failure_modes
+- handling_strategy
+- monitoring_plan
+output_requirements:
+- Include what fails and how it is handled
+- Include monitoring/logging/metrics expectations
+depends_on:
+- constitution_loaded
+failure_conditions:
+- System description too vague to assess reliability
+failure_response:
+  action: REQUEST_CONTEXT_OR_PROVIDE_BASELINE_CHECKLIST
+  require_hitl: false
+hitl:
+  required_for:
+  - Approving production readiness
+notes: Derived from skills/quality/SKILL_ReliabilityAndFailureModes.md.

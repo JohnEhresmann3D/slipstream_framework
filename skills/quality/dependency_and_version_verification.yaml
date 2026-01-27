@@ -1,0 +1,36 @@
+name: dependency_and_version_verification
+category: validation
+version: v1.0
+description: Verify library/tool/API usage with explicit versioning and compatibility notes;
+  avoid inventing unstable APIs.
+allows:
+- state_dependency_versions_or_ranges
+- verify_api_or_cli_existence
+- note_deprecations_and_breaking_changes_risks
+- offer_conservative_alternatives_when_uncertain
+prohibits:
+- invent_apis_or_flags
+- omit_version_context_when_relevant
+requires_inputs:
+- dependency_or_tool_reference
+optional_inputs:
+- target_platform
+- language_runtime_versions
+produces:
+- dependency_list
+- compatibility_notes
+- risk_notes
+output_requirements:
+- Include name + version (or range) where relevant
+- Call out uncertainty explicitly
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Unable to verify due to unavailable sources
+failure_response:
+  action: DISCLOSE_UNCERTAINTY_AND_PROPOSE_SAFE_ALTERNATIVE
+  require_hitl: false
+hitl:
+  required_for:
+  - Selecting dependencies for production
+notes: Derived from skills/quality/SKILL_DependencyAndVersionVerification.md.

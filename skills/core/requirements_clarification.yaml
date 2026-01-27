@@ -1,0 +1,37 @@
+name: requirements_clarification
+category: planning
+version: v1.0
+description: Resolve ambiguity by asking minimal clarifying questions and providing a safe default
+  path with explicit assumptions.
+allows:
+- identify_ambiguities_and_multiple_interpretations
+- ask_minimal_clarifying_questions
+- state_assumptions_explicitly
+- propose_safe_default_path
+prohibits:
+- proceed_with_risky_assumptions
+- ask_excessive_questions_without_value
+- mask_uncertainty
+requires_inputs:
+- user_request
+optional_inputs:
+- context_about_system_or_constraints
+produces:
+- assumptions
+- clarifying_questions
+- safe_default_plan
+output_requirements:
+- Maximum 3 clarifying questions unless user requests more
+- Assumptions must be explicit and separable from facts
+- Provide a conservative default approach when possible
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Safety-critical decision cannot be made without clarification
+failure_response:
+  action: REQUEST_CLARIFICATION_AND_HALT_RISKY_WORK
+  require_hitl: false
+hitl:
+  required_for:
+  - Proceeding when assumptions materially affect outcomes
+notes: Derived from skills/core/SKILL_RequirementsClarification.md.

@@ -1,0 +1,37 @@
+name: code_review_and_refactor_integrity
+category: validation
+version: v1.0
+description: Review refactors and code changes with emphasis on behavioral integrity, complexity
+  reduction, and test coverage.
+allows:
+- separate_behavior_preserving_refactor_from_behavior_change
+- identify_hidden_complexity_and_naming_issues
+- flag_missing_tests_and_risky_paths
+- call_out_security_footguns
+- suggest_diffs_or_patch_snippets_when_requested
+prohibits:
+- assert_behavior_is_preserved_without_supporting_evidence
+- introduce_behavior_changes_without_labeling_them
+requires_inputs:
+- code_changes_or_diff_context
+optional_inputs:
+- test_results
+- performance_constraints
+produces:
+- review_findings
+- risk_list
+- suggested_changes
+output_requirements:
+- Categorize issues as high/medium/nits
+- Clearly label behavior-preserving vs behavior-changing suggestions
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Insufficient context to review safely
+failure_response:
+  action: REQUEST_MORE_CONTEXT
+  require_hitl: false
+hitl:
+  required_for:
+  - Approving merge or declaring refactor safe
+notes: Derived from skills/quality/SKILL_CodeReviewAndRefactorIntegrity.md.

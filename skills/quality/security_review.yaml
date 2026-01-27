@@ -1,0 +1,39 @@
+name: security_review
+category: validation
+version: v1.0
+description: Baseline security review for endpoints, auth/authz, data handling, and untrusted
+  input processing.
+allows:
+- perform_threat_modeling
+- identify_input_validation_and_encoding_needs
+- review_authn_authz_boundaries
+- review_secrets_management
+- recommend_least_privilege_and_secure_defaults
+- flag_sensitive_logging_risks
+prohibits:
+- provide_instructions_for_wrongdoing_or_exploitation
+- recommend_hardcoded_secrets
+- approve_security_posture_without_threat_model
+requires_inputs:
+- system_or_endpoint_description
+optional_inputs:
+- data_classification
+- deployment_context
+produces:
+- threats
+- mitigations
+- unsafe_requests_and_safer_alternatives
+output_requirements:
+- List threats and corresponding mitigations
+- Flag unsafe requests and provide safer alternatives
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Financial logic, destructive ops, prod credential handling, or PII retention require escalation
+failure_response:
+  action: ESCALATE_AND_REQUIRE_HITL
+  require_hitl: true
+hitl:
+  required_for:
+  - Handling PII, auth changes, destructive operations, or financial logic
+notes: Derived from skills/quality/SKILL_Security_Review.md.

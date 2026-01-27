@@ -1,0 +1,38 @@
+name: documentation_handoff
+category: validation
+version: v1.0
+description: Produce maintenance-oriented documentation that enables others to run, test, and
+  operate delivered work.
+allows:
+- summarize_changes
+- explain_rationale
+- document_run_instructions
+- document_test_instructions
+- list_known_limitations
+- provide_rollback_plan_when_applicable
+prohibits:
+- omit_operationally_relevant_details
+- claim_tests_passed_without_evidence
+requires_inputs:
+- description_of_changes_or_artifacts
+optional_inputs:
+- runtime_environment_details
+- test_environment_details
+produces:
+- handoff_notes
+- runbook_snippet
+- test_plan_snippet
+output_requirements:
+- 'Must include: what changed, why, how to run, how to test'
+- Must include known limitations; include rollback plan if operational impact
+depends_on:
+- constitution_loaded
+failure_conditions:
+- Insufficient detail about changes to document accurately
+failure_response:
+  action: REQUEST_MISSING_DETAILS
+  require_hitl: false
+hitl:
+  required_for:
+  - External publication of documentation
+notes: Derived from skills/domain/SKILL_DocumentationHandoff.md.
