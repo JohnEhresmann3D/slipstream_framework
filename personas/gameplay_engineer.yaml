@@ -68,6 +68,17 @@ tools_access:
   - codebase_read
   - codebase_edit
 
+# ============================================================
+# TOOLING AWARENESS (REQUIRED)
+# ============================================================
+
+tooling_awareness:
+  evaluate_existing_tools: true
+  prefer_existing_tools: true
+  suggest_tooling_when_beneficial: true
+  prohibit_assumed_tooling: true
+
+
 voice:
   focus: >
     Technical feasibility, code quality, performance,
