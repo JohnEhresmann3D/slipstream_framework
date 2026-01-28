@@ -1,10 +1,3 @@
-## License
-
-This project is licensed under the **Apache License, Version 2.0**.
-
-You are free to use, modify, and distribute this software, including for commercial purposes, provided you comply with the terms of the license.
-
-See the [`LICENSE`](./LICENSE) file for full details.
 
 # Slipstream Framework
 
@@ -20,6 +13,14 @@ The intelligence stays in the models. Slipstream handles:
 - **Safety** through human-in-the-loop gates
 
 This is not another "cognitive framework" that wraps LLMs in middleware complexity. It's a protocol for how agents communicate, share context, and stay grounded in reality.
+
+## License
+
+This project is licensed under the **Apache License, Version 2.0**.
+
+You are free to use, modify, and distribute this software, including for commercial purposes, provided you comply with the terms of the license.
+
+See the [`LICENSE`](./LICENSE) file for full details.
 
 ## Architecture
 
