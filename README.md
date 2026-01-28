@@ -1,3 +1,11 @@
+## License
+
+This project is licensed under the **Apache License, Version 2.0**.
+
+You are free to use, modify, and distribute this software, including for commercial purposes, provided you comply with the terms of the license.
+
+See the [`LICENSE`](./LICENSE) file for full details.
+
 # Slipstream Framework
 
 A protocol for agent collaboration, not a cognitive runtime.
