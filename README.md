@@ -1,278 +1,253 @@
+# Slipstream Framework v2.0
 
-# Slipstream Framework
+A sterile, agent-friendly scaffolding and template system for building AI-assisted developer workflows and repository automation.
 
-A protocol for agent collaboration, not a cognitive runtime.
+This repository provides a base for defining:
+- **Agents** — defined personas with domain ownership and constitutions  
+- **Skills/Subskills** — modular procedural units of work  
+- **Constitutions** — governance rules and priority orders  
+- **Workflows** — standardized task execution and routing patterns  
 
-## Philosophy
+It’s designed for use by **humans**, **AI assistants**, or multi-agent systems (Claude, Codex, Anti-Gravity, etc.) to build out structured processes in your project.
 
-The intelligence stays in the models. Slipstream handles:
+---
 
-- **Coordination** between specialized personas
-- **Grounding** through research before action
-- **Governance** through constitutional constraints
-- **Safety** through human-in-the-loop gates
+## 🚀 Overview
 
-This is not another "cognitive framework" that wraps LLMs in middleware complexity. It's a protocol for how agents communicate, share context, and stay grounded in reality.
+Slipstream v2.0 is *purpose-neutral* — it does **not ship pre-built agents or skills**. Instead, it supplies reusable **templates** and a mechanism to instantiate them so you can build your own agentic system.
 
-## License
+This README explains:
+1. How to use Slipstream templates to build agent workflows
+2. How to integrate with AI agent systems (Claude, Codex, Anti-Gravity)
+3. The intended hierarchy/structure across templates and agents
+4. Current features and scaffold contents
 
-This project is licensed under the **Apache License, Version 2.0**.
+---
 
-You are free to use, modify, and distribute this software, including for commercial purposes, provided you comply with the terms of the license.
+## 📦 Scaffold Structure
 
-See the [`LICENSE`](./LICENSE) file for full details.
+After running:
 
-## Architecture
+```sh
+python bootstrap_slipstream_framework.py
+or equivalent initialization, you should have:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      WORKFLOW ORCHESTRATOR                       │
-│                                                                  │
-│  Utilities:                                                      │
-│  ├── circuit_breaker (prevent runaway conversations)             │
-│  ├── hitl (human gates at phase boundaries)                      │
-│  ├── audit (log decisions, tools, outputs)                       │
-│  └── rate_limiter (API throttling)                               │
-└──────────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
-│   PERSONAS    │    │    SKILLS     │    │     TOOLS     │
-│  (who speaks) │    │ (how to work) │    │ (what to use) │
-├───────────────┤    ├───────────────┤    ├───────────────┤
-│ Producer      │    │ Constitution  │    │ deepsearch    │
-│ Game Designer │    │ DeepResearcher│    │ codebase grep │
-│ Gameplay Eng  │    │ Planning      │    │ web fetch     │
-│ QA Engineer   │    │ Security      │    │ MCP servers   │
-│ Sound Design  │    │ Requirements  │    │               │
-└───────────────┘    └───────────────┘    └───────────────┘
-```
+slipstream_v_2_0/
+├── LICENSE
+├── NOTICE
+├── .gitignore
+└── templates/
+    ├── agents/
+    │   └── AGENT_TEMPLATE.md
+    ├── skills/
+    │   ├── SKILL_TEMPLATE.md
+    │   ├── SUBSKILL_TEMPLATE.md
+    │   └── SKILL_REGISTRY_TEMPLATE.md
+    ├── constitutions/
+    │   └── CONSTITUTION_TEMPLATE.md
+    └── workflows/
+        ├── WORKFLOW_TEMPLATE.md
+📘 How to Use
+🧠 1. Create Skills
+Copy SKILL_TEMPLATE.md to a new skill folder:
 
-## Directory Structure
+skills/<domain-name>/
+  SKILL.md
+  subskills/
+    <id>-<slug>.md
+Fill in:
 
-```
-Slipstream_Framework/
-├── slipstream.yaml           # Main configuration
-├── README.md
-│
-├── constitution/             # Governance
-│   └── AI_Engineer_Constitution.md
-│
-├── personas/                 # Who speaks
-│   ├── _schema.yaml
-│   ├── producer.yaml
-│   ├── game_designer.yaml
-│   ├── gameplay_engineer.yaml
-│   ├── qa_engineer.yaml
-│   └── sound_designer.yaml
-│
-├── skills/                   # How to work
-│   ├── _schema.yaml
-│   ├── core/                 # Always available
-│   │   ├── SKILL_DeepResearcher.md
-│   │   ├── SKILL_PlanningAndScoping.md
-│   │   └── SKILL_RequirementsClarification.md
-│   ├── quality/              # Quality assurance
-│   │   ├── SKILL_Security_Review.md
-│   │   ├── SKILL_TestStrategy.md
-│   │   └── ...
-│   └── domain/               # Project-specific
-│       ├── SKILL_SoundDesign.md
-│       └── SKILL_DocumentationHandoff.md
-│
-├── workflows/                # Phase sequences
-│   ├── _schema.yaml
-│   ├── standard.yaml         # Full 5-phase workflow
-│   ├── quick_fix.yaml        # Abbreviated workflow
-│   └── research_only.yaml    # Research without implementation
-│
-├── tools/                    # Tool configurations
-│   ├── deepsearch.yaml
-│   ├── web_fetch.yaml
-│   └── codebase.yaml
-│
-├── utilities/                # Runtime utilities
-│   ├── __init__.py
-│   ├── io.py
-│   ├── circuit_breaker.py
-│   ├── audit.py
-│   ├── hitl.py
-│   ├── rate_limiter.py
-│   └── rules.yaml
-│
-└── sessions/                 # Runtime state
-    └── {session_id}/
-        ├── context.json
-        ├── audit.log
-        └── artifacts/
-```
+Purpose
 
-## Workflow Phases
+Triggers (when this applies)
 
-### Standard Workflow
+Inputs/Outputs
 
-```
-PHASE 1: INTAKE
-├── Human provides task
-├── Producer clarifies requirements
-├── HITL gate: confirm understanding
-└── Output: Task statement with acceptance criteria
+Procedure
 
-PHASE 2: RESEARCH (DeepResearcher enforced)
-├── All personas research their domain
-├── Competitive analysis, failure analysis, tooling deep dive
-├── Circuit breaker: max 10 turns
-└── Output: Cited research artifacts
+Quality Gate
 
-PHASE 3: POW-WOW (Planning + Debate)
-├── Personas share findings
-├── Challenge assumptions, fill gaps
-├── Synthesize into plan
-├── HITL gate: approve plan
-└── Output: Approved implementation plan
+Subskills
 
-PHASE 4: EXECUTION
-├── Skills applied per Constitution
-├── Moral Gate checked before code
-├── Audit trail maintained
-└── Output: Implementation
+Each subskill gets its own file under subskills/ using SUBSKILL_TEMPLATE.md.
 
-PHASE 5: HANDOFF
-├── Verify acceptance criteria
-├── Documentation complete
-├── HITL gate: final review
-└── Output: Complete
-```
+Add entry to your SKILL_REGISTRY.md using SKILL_REGISTRY_TEMPLATE.md as a guide.
 
-## Key Concepts
+🤖 2. Create Agents
+Agents define who executes which skills.
 
-### Personas
+Duplicate AGENT_TEMPLATE.md per persona.
 
-Personas define **who speaks** and **what they care about**. Each persona has:
+Define:
 
-- **Role**: What they do
-- **Skills**: What rules they follow
-- **Voice**: What they focus on, what they challenge, who they defer to
-- **Tools**: What they can use
+Mission and domain ownership
 
-Example persona interaction:
+Allowed skills
 
-```
-Producer: "This feature needs to ship by Friday."
-Game Designer: "The UX flow isn't right yet. Players will be confused."
-Gameplay Engineer: "I can simplify the implementation if we cut feature X."
-Producer: "Let's cut X. Designer, can you validate the simplified flow?"
-```
+Activation criteria (triggers)
 
-### Skills
+Input/Output expectations
 
-Skills define **how to work**. They're applied based on context:
+Agent-level constitution
 
-- **Phase 0 (Mandatory)**: DeepResearcher - always research first
-- **Always**: PlanningAndScoping - unless trivial
-- **Conditional**: SecurityReview if handling user data, etc.
+Agents can be used to control workflows, code generation tasks, quality checks, or specialized responsibilities.
 
-Skills have precedence:
-1. Safety/Security
-2. Correctness/Verification
-3. Maintainability
-4. Speed/Convenience
+📜 3. Define Constitutions
+Constitutions govern behavior for:
 
-### Constitution
+Project scope
 
-The Constitution is **runtime law**. It defines:
+Agent behavior constraints
 
-- Safety constraints (no hidden risk, least privilege)
-- Truth constraints (no hallucinated APIs, explicit uncertainty)
-- Change control (no silent behavior changes)
-- Escalation requirements (human review for risky changes)
-- Moral Gate (checklist before producing code)
+Decision policies
 
-### Utilities
+Duplicate and customize CONSTITUTION_TEMPLATE.md per project or agent.
 
-Utilities provide **safety infrastructure**:
+🔄 4. Workflows
+Workflows define patterns of work across agents and skills.
 
-- **circuit_breaker**: Stops runaway conversations
-- **hitl**: Human approval gates at phase boundaries
-- **audit**: Logs all decisions and tool calls
-- **rate_limiter**: Prevents API abuse
+Use WORKFLOW_TEMPLATE.md as a starting point.
 
-## Usage
+Define:
 
-### Basic Session
+Entry criteria
 
-```python
-from utilities import CircuitBreaker, HITLManager, AuditTrail
+Step sequence
 
-# Initialize utilities
-cb = CircuitBreaker(session_id="feature-123")
-hitl = HITLManager(session_id="feature-123")
-audit = AuditTrail()
+Exit criteria
 
-# Check circuit before agent turn
-if cb.can_execute():
-    # Run agent turn
-    result = run_agent_turn(...)
+Failure modes / escalation
 
-    # Record result
-    cb.record_turn_result(TurnResult(
-        turn_number=1,
-        artifacts_produced=len(result.artifacts),
-        new_information=result.has_new_info
-    ))
+Examples:
 
-    # Log to audit
-    audit.log_event(
-        session_id="feature-123",
-        event_type="agent_turn",
-        agent="gameplay_engineer",
-        phase="execution",
-        details=result.summary,
-        tools_used=result.tools,
-        skills_applied=["security_review", "test_strategy"]
-    )
+Task execution workflow
 
-# Check HITL gate
-gate_result = hitl.check_and_gate(
-    gate_id="plan-approval",
-    action_type="phase_transition",
-    phase="powwow",
-    description="Approve implementation plan",
-    details={"plan": plan_content}
-)
+Routing between agents
 
-if not gate_result["ok"]:
-    # Wait for human approval
-    print(f"Waiting for approval: {gate_result['gate']['description']}")
-```
+Orchestrator → worker delegation
 
-### Adding a New Persona
+Evaluator → optimizer loop
 
-1. Create `personas/your_persona.yaml`
-2. Define role, skills, voice, tools
-3. Reference in workflow phases
+🤝 Working with AI Agents
+Many modern development workflows leverage AI agents to generate, review, and validate content. In your README (or in an AGENTS.md file), you should:
 
-### Adding a New Skill
+🧠 Provide clear agent instructions
+Tools like AGENTS.md can define agent context, role, and boundaries. A strong AGENTS.md generally includes: 
 
-1. Create `skills/{category}/SKILL_YourSkill.md`
-2. Follow the schema (Use When, Rules, Output Format)
-3. Reference in persona definitions
+Agent identity and purpose
 
-### Adding a New Workflow
+Project structure
 
-1. Create `workflows/your_workflow.yaml`
-2. Define phases, gates, skills enforced
-3. Reference in `slipstream.yaml` or use directly
+Tech stack & commands
 
-## Attribution
+Roles & limitations
 
-Utilities adapted from [CLOCKWORK-CORE](https://github.com/JoshTellsTime/CLOCKWORK-CORE):
-- circuit_breaker.py
-- audit.py
-- hitl.py
-- rate_limiter.py
+Example (conceptual):
 
-## License
+---
+name: docs_agent
+description: Generate docs for this Slipstream system using templates.
+---
 
-MIT
+You are a documentation engineer. Use templates in `templates/` to create skills and workflows. Do NOT modify source files unrelated to docs.
+Commands available:
+- Read and write `templates/`
+- Validate `SKILL_REGISTRY.md`
+- Generate skill/subskill scaffolds
+🧩 Model-Aware Routing
+Different agents excel at different tasks:
+
+Goal	Best Fit
+Architectural planning	Claude Claude
+Code generation	Codex (OpenAI GPT)
+Reasoning + validation	Claude (Anthropic)
+Formal specification	Anti-Gravity
+Your agent orchestration system should include a router that:
+
+Identifies domain
+
+Picks skill
+
+Assigns agent
+
+Handles handoffs
+
+This pattern ensures consistent execution without ambiguity.
+
+🏛️ Intended Hierarchy
+🧩 Skills & Subskills
+Skills are procedural building blocks that describe:
+
+What to do
+
+When to apply
+
+What success looks like
+
+Subskills are specific patterns within skills that break tasks down further.
+
+🤖 Agents
+Agents are domain owners that:
+
+Select skills
+
+Generate outputs manually or via AI
+
+Respect constitutions and handoff rules
+
+Report results with validations
+
+🛠️ Workflows
+Workflows orchestrate how agents interact and how work flows from:
+
+Task assignment
+
+Execution
+
+Validation
+
+Reporting
+
+This meeting of skills, agents, and workflows forms the backbone of AI-augmented development.
+
+🎯 Current Features
+The Slipstream v2.0 scaffold includes:
+
+✔️ Agent template (AGENT_TEMPLATE.md)
+✔️ Skill templates (SKILL_TEMPLATE.md, SUBSKILL_TEMPLATE.md)
+✔️ Skill registry template (SKILL_REGISTRY_TEMPLATE.md)
+✔️ Constitution template (CONSTITUTION_TEMPLATE.md)
+✔️ Base workflow template (WORKFLOW_TEMPLATE.md)
+✔️ Apache 2.0 license + NOTICE file
+✔️ .gitignore for common project files
+
+This gives you zero assumptions about your domain and maximum flexibility to design your own agentic system.
+
+📚 Best Practices
+Based on industry README guidance: 
+
+Start with a clear Purpose section at the top.
+
+Use table of contents for navigation.
+
+Provide clear installation/setup steps for contributors.
+
+Document agent roles & responsibilities explicitly.
+
+Keep AI agent context (triggers, tools, boundaries) clear.
+
+Link to templates rather than duplicating contents.
+
+📝 Contributing
+To contribute improvements to Slipstream v2.0:
+
+Fork the repo
+
+Add new templates and update README accordingly
+
+Submit a pull request
+
+Update CHANGELOG.md with your changes
+
+🧑‍💻 License
+This project is licensed under the Apache License 2.0. See the LICENSE file for details.
