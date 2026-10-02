@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import json
+import os
 import sys
 import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Iterator
 
 from ..config.models import Phase, Project, Workflow
 from ..config.prompt import PhasePromptBuilder
@@ -110,11 +113,22 @@ class WorkflowEngine:
             launch=dict(launch or {}),
         )
         self.store.save(state)
-        self._log(state, "workflow_started", workflow=workflow.id, personas=assigned)
-        return self._drive(state)
+        with self._locked(run_id):
+            self._log(state, "workflow_started", workflow=workflow.id, personas=assigned)
+            return self._drive(state)
 
-    def resume(self, workflow_run_id: str) -> WorkflowState:
+    def resume(self, workflow_run_id: str, launch: dict | None = None) -> WorkflowState:
+        """Continue a run. `launch`, if given, replaces the saved launch settings
+        before any agent call, so later resumes keep the same checks and budget."""
+        with self._locked(workflow_run_id):
+            return self._resume(workflow_run_id, launch)
+
+    def _resume(self, workflow_run_id: str, launch: dict | None) -> WorkflowState:
         state = self.store.load(workflow_run_id)
+        if launch is not None and launch != state.launch:
+            state.launch = dict(launch)
+            self.store.save(state)
+            self._log(state, "launch_updated", launch=launch)
         if state.status is WorkflowStatus.DONE:
             return state
         if state.status is WorkflowStatus.AWAITING_APPROVAL:
@@ -131,6 +145,10 @@ class WorkflowEngine:
         return self._drive(state)
 
     def approve(self, workflow_run_id: str, gate_id: str | None = None, note: str = "", by: str | None = None) -> WorkflowState:
+        with self._locked(workflow_run_id):
+            return self._approve(workflow_run_id, gate_id, note, by)
+
+    def _approve(self, workflow_run_id: str, gate_id: str | None, note: str, by: str | None) -> WorkflowState:
         state, gate = self._pending(workflow_run_id, gate_id)
         gate.status = GateStatus.APPROVED
         gate.decided_at = utc_now()
@@ -146,6 +164,10 @@ class WorkflowEngine:
     def reject(self, workflow_run_id: str, note: str, gate_id: str | None = None, by: str | None = None) -> WorkflowState:
         if not note.strip():
             raise WorkflowError("rejecting a gate requires a note explaining what to change")
+        with self._locked(workflow_run_id):
+            return self._reject(workflow_run_id, note, gate_id, by)
+
+    def _reject(self, workflow_run_id: str, note: str, gate_id: str | None, by: str | None) -> WorkflowState:
         state, gate = self._pending(workflow_run_id, gate_id)
         gate.status = GateStatus.REJECTED
         gate.decided_at = utc_now()
@@ -168,6 +190,26 @@ class WorkflowEngine:
         return [self.store.load(run_id) for run_id in self.store.list_ids()]
 
     # ------------------------------------------------------------ internals
+
+    @contextmanager
+    def _locked(self, workflow_run_id: str) -> Iterator[None]:
+        """Hold an exclusive per-run lock so two processes never drive one run."""
+        if not self.store.exists(workflow_run_id):
+            raise FileNotFoundError(f"no workflow run {workflow_run_id!r} under {self.store.root}")
+        path = self.store.run_dir(workflow_run_id) / "lock"
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            raise WorkflowError(
+                f"workflow run {workflow_run_id!r} is in use by another process ({path}). "
+                "If no slipstream process is running it, delete that file and retry."
+            ) from None
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps({"pid": os.getpid(), "since": utc_now()}))
+        try:
+            yield
+        finally:
+            path.unlink(missing_ok=True)
 
     def _workflow(self, workflow_id: str | None) -> Workflow:
         if not workflow_id:
@@ -287,8 +329,9 @@ class WorkflowEngine:
             "That file is how the next phase and the human reviewer will see your work."
         )
 
-    def _phase_criteria(self, phase: Phase, artifact_rel: str) -> list[str]:
+    def _phase_criteria(self, phase: Phase, artifact_rel: str, record: PhaseRecord) -> list[str]:
         criteria = [f"`{artifact_rel}` exists and contains the {phase.output} for this phase"]
+        criteria += [f"Reviewer feedback is addressed: {note}" for note in record.feedback]
         criteria += phase.checklist
         criteria += phase.standards
         if phase.moral_gate:
@@ -307,6 +350,14 @@ class WorkflowEngine:
             sections.append(
                 "## Earlier phase outputs (read these before working)\n"
                 + "\n".join(f"- {r.name}: `{r.artifact}`" for r in earlier)
+            )
+        previous = sorted(
+            self.store.artifact_dir(state.workflow_run_id).glob(f"*_{record.name}_*.attempt*.md")
+        )
+        if previous:
+            sections.append(
+                "## Your previous attempts at this phase (for reference; write a new output)\n"
+                + "\n".join(f"- `{self._rel(p)}`" for p in previous)
             )
         if record.feedback:
             sections.append(
@@ -350,6 +401,16 @@ class WorkflowEngine:
             self.store.save(state)
             return
 
+        resumable = (
+            record.status is PhaseStatus.RUNNING
+            and record.run_id
+            and (RunStore(self.state_root / "runs").run_dir(record.run_id) / "state.json").is_file()
+        )
+        if not resumable and artifact.exists():
+            # A fresh attempt must produce a fresh artifact; otherwise the
+            # existence check and verifier would accept the rejected one.
+            artifact.replace(artifact.with_name(f"{artifact.stem}.attempt{record.attempts or 1}.md"))
+
         operator = self.operator_factory(
             root=self.workspace,
             worker=self.worker,
@@ -370,11 +431,6 @@ class WorkflowEngine:
             required_worker_capabilities=self.required_worker_capabilities,
         )
 
-        resumable = (
-            record.status is PhaseStatus.RUNNING
-            and record.run_id
-            and (RunStore(self.state_root / "runs").run_dir(record.run_id) / "state.json").is_file()
-        )
         if resumable:
             self._log(state, "phase_resumed", phase=phase.name, run_id=record.run_id)
             result = operator.resume(record.run_id)
@@ -388,7 +444,7 @@ class WorkflowEngine:
             self._log(state, "phase_started", phase=phase.name, lead=lead, consultants=consultants, run_id=record.run_id)
             result = operator.run(
                 self._phase_goal(state, phase, artifact_rel),
-                self._phase_criteria(phase, artifact_rel),
+                self._phase_criteria(phase, artifact_rel, record),
                 run_id=record.run_id,
             )
         self._record_result(state, record, result)

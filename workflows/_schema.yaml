@@ -12,6 +12,13 @@ optional_fields:
   - default_personas  # Personas assigned by default
   - triggers          # When to use this workflow
   - circuit_breaker   # Override default circuit breaker settings
+  - transitions       # Extra requirements checked before moving between phases
+
+# transitions:
+#   <phase>_to_<next phase | complete>:
+#     requires: [phase_done, artifact_exists, hitl_gate_approved]
+# phase_done and artifact_exists always apply; hitl_gate_approved always applies
+# to gated phases and is an error on a phase without hitl_gate.
 
 field_definitions:
   name:
@@ -39,6 +46,9 @@ field_definitions:
         hitl_gate:
           type: boolean
           description: "Whether human approval is required to exit this phase"
+        gate_id:
+          type: string
+          description: "Required when hitl_gate is true; unique within the workflow"
         agents:
           type: array
           description: "Which personas are active (or 'all_assigned')"
@@ -47,10 +57,17 @@ field_definitions:
           description: "Skills that must be applied in this phase"
         circuit_breaker:
           type: object
-          description: "Phase-specific circuit breaker settings"
+          description: >
+            Phase limits. max_turns = most worker->evidence->verifier rounds the
+            phase may take; stall_threshold = consecutive rounds without evidence
+            of progress before the run stops for a human. Tool-use turns inside a
+            single agent call are capped separately with --max-agent-turns.
+        run_checks:
+          type: boolean
+          description: "Run the project's --check commands as required checks in this phase"
         output:
           type: string
-          description: "Expected output artifact from this phase"
+          description: "Required. Name of the Markdown artifact this phase writes"
         mode:
           type: string
           enum: [sequential, collaborative, parallel]

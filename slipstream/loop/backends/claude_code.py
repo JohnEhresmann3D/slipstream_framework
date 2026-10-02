@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from ._process import resolve_command
+from ._process import resolve_command, terminate_tree
 from .base import (
     AgentRequest,
     AgentResult,
@@ -113,7 +113,7 @@ class ClaudeCodeBackend:
             try:
                 stdout_raw, stderr_raw = self._active_process.communicate(request.prompt, timeout=request.timeout_sec)
             except subprocess.TimeoutExpired as exc:
-                self._active_process.kill()
+                terminate_tree(self._active_process)
                 self._active_process.communicate()
                 raise BackendTimeout(f"Claude Code timed out after {request.timeout_sec}s") from exc
             returncode = self._active_process.returncode or 0
@@ -173,8 +173,8 @@ class ClaudeCodeBackend:
         )
 
     def abort(self) -> None:
-        if self._active_process and self._active_process.poll() is None:
-            self._active_process.terminate()
+        if self._active_process:
+            terminate_tree(self._active_process)
 
     def close(self) -> None:
         self.abort()

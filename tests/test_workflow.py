@@ -227,3 +227,44 @@ def test_unknown_workflow_and_persona_are_rejected(project, git_repo):
         engine.start("x", workflow_id="nope")
     with pytest.raises(WorkflowError, match="unknown persona"):
         engine.start("x", workflow_id="quick_fix", personas=["wizard"])
+
+
+def test_rejected_artifact_cannot_pass_unchanged(project, git_repo):
+    worker = ArtifactWorker()
+    engine = _engine(project, git_repo, worker, limits=EngineLimits(max_stuck_iterations=1))
+    engine.start("Fix it", workflow_id="quick_fix", workflow_run_id="qf9")
+    engine.reject("qf9", note="Cover the moving-platform case")
+
+    # The worker now does nothing; the old artifact must not satisfy the phase.
+    engine.worker = ArtifactWorker(write=False)
+    state = engine.resume("qf9")
+
+    assert state.status is WorkflowStatus.NEEDS_HUMAN
+    verify = state.record("verify")
+    artifact_dir = git_repo / ".slipstream" / "workflows" / "qf9" / "artifacts"
+    assert not (git_repo / verify.artifact).exists()
+    assert list(artifact_dir.glob("*_verify_*.attempt1.md"))
+    prompt = engine.worker.calls[0].prompt
+    assert "Reviewer feedback is addressed: Cover the moving-platform case" in prompt
+    assert ".attempt1.md" in prompt
+
+
+def test_second_driver_is_locked_out(project, git_repo):
+    engine = _engine(project, git_repo)
+    engine.start("Fix it", workflow_id="quick_fix", workflow_run_id="qf10")
+    lock = git_repo / ".slipstream" / "workflows" / "qf10" / "lock"
+    lock.write_text("{}", encoding="utf-8")  # another process holds the run
+
+    with pytest.raises(WorkflowError, match="in use by another process"):
+        engine.approve("qf10")
+    lock.unlink()
+    engine.approve("qf10")
+    assert not lock.exists()
+
+
+def test_resume_persists_launch_overrides(project, git_repo):
+    engine = _engine(project, git_repo, ArtifactWorker(write=False), limits=EngineLimits(max_stuck_iterations=1))
+    engine.start("Fix it", workflow_id="quick_fix", workflow_run_id="qf11", launch={"max_cost_usd": 10})
+    engine.worker = ArtifactWorker()
+    engine.resume("qf11", launch={"max_cost_usd": 2})
+    assert engine.status("qf11").launch == {"max_cost_usd": 2}

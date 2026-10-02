@@ -45,3 +45,27 @@ def test_backend_verifier_uses_isolated_workspace_snapshot(tmp_path):
     assert gate.verdict is Verdict.MET
     assert target.read_text(encoding="utf-8") == "original"
     assert backend.calls[0].workspace != source
+
+
+def test_verifier_snapshot_includes_artifacts_from_skipped_directories(tmp_path):
+    source = Path(tmp_path) / "source"
+    artifact = source / ".slipstream" / "workflows" / "w" / "artifacts" / "01_plan.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("# Plan\n" + "detail\n" * 3000, encoding="utf-8")
+    seen = {}
+
+    def read_artifact(workspace, call):
+        copy = workspace / ".slipstream" / "workflows" / "w" / "artifacts" / "01_plan.md"
+        seen["text"] = copy.read_text(encoding="utf-8") if copy.exists() else None
+        seen["other_state"] = (workspace / ".slipstream" / "runs").exists()
+
+    backend = FakeBackend([
+        ScriptedStep(AgentResult(text='{"verdict":"MET","reason":"ok","unmet_criteria":[]}'), read_artifact)
+    ])
+    (source / ".slipstream" / "runs").mkdir(parents=True)
+    rel = artifact.relative_to(source)
+    evidence = EvidenceBundle(None, "", [], [], [rel], {})
+    BackendVerifier(backend).evaluate("goal", ["plan written"], evidence, AgentResult(text=""), None, source)
+
+    assert seen["text"] == artifact.read_text(encoding="utf-8")  # full file, not an excerpt
+    assert seen["other_state"] is False  # the rest of .slipstream stays excluded

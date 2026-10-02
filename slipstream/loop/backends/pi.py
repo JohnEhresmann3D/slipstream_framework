@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ._process import resolve_command
+from ._process import resolve_command, terminate_tree
 from .base import (
     AgentRequest,
     AgentResult,
@@ -175,19 +175,20 @@ class PiBackend:
         # RPC itself is line-driven. Timeout is enforced conservatively by
         # aborting from a timer so the adapter remains synchronous to callers.
         with self._lock:
-            self._ensure_process(request)
             timer: threading.Timer | None = None
             timed_out = threading.Event()
 
             def _timeout() -> None:
                 timed_out.set()
                 proc = self._proc
-                if proc is not None and proc.poll() is None:
+                if proc is not None:
                     try:
-                        proc.terminate()
+                        terminate_tree(proc)
                     except Exception:
                         pass
 
+            # Start the deadline before process start/session restore so a
+            # hung `switch_session` is bounded too.
             if request.timeout_sec:
                 timer = threading.Timer(request.timeout_sec, _timeout)
                 timer.daemon = True
@@ -198,6 +199,12 @@ class PiBackend:
             tool_calls: list[dict[str, Any]] = []
             baseline_stats: dict[str, Any] = {}
             try:
+                try:
+                    self._ensure_process(request)
+                except BackendProtocolError as exc:
+                    if timed_out.is_set():
+                        raise BackendTimeout(f"Pi timed out after {request.timeout_sec}s during startup") from exc
+                    raise
                 try:
                     baseline_response = self._command({"type": "get_session_stats"})
                     baseline_stats = baseline_response.get("data") if isinstance(baseline_response.get("data"), dict) else {}
@@ -286,22 +293,18 @@ class PiBackend:
                     proc.stdin.write(json.dumps({"type": "abort"}) + "\n")
                     proc.stdin.flush()
                 else:
-                    proc.terminate()
+                    terminate_tree(proc)
             except Exception:
                 try:
-                    proc.terminate()
+                    terminate_tree(proc)
                 except Exception:
                     pass
 
     def close(self) -> None:
         proc = self._proc
         self._proc = None
-        if proc and proc.poll() is None:
-            proc.terminate()
-            try:
-                proc.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                proc.kill()
+        if proc:
+            terminate_tree(proc)
         self._workspace = None
         self._session_token = None
         self._model = None

@@ -86,6 +86,19 @@ class BackendVerifier:
         shutil.copytree(source, destination, dirs_exist_ok=True, symlinks=True, ignore=ignored)
 
     @staticmethod
+    def _copy_artifacts(source: Path, destination: Path, evidence: EvidenceBundle) -> None:
+        # Collected artifacts may live in directories the snapshot skips
+        # (e.g. .slipstream/); the verifier still needs to read them in full.
+        root = source.resolve()
+        for rel in evidence.artifacts:
+            src = (source / rel).resolve()
+            if not src.is_file() or not src.is_relative_to(root):
+                continue
+            dst = destination / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+
+    @staticmethod
     def _render_evidence(evidence: EvidenceBundle) -> str:
         checks = []
         for c in evidence.checks:
@@ -181,6 +194,7 @@ WORKER REPORT (not proof):
                 with tempfile.TemporaryDirectory(prefix="slipstream-verify-") as tmp:
                     verify_workspace = Path(tmp) / "workspace"
                     self._snapshot_workspace(Path(workspace), verify_workspace)
+                    self._copy_artifacts(Path(workspace), verify_workspace, evidence)
                     try:
                         result = self.backend.run(
                             AgentRequest(

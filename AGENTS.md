@@ -12,4 +12,11 @@ Always use this project's **Slipstream operator** as the orchestration harness f
 - When adding agent integrations, implement an adapter and capability declaration without adding provider-specific logic to `slipstream/loop/operator.py`.
 - Keep run budgets, iteration/turn limits, state checkpoints, and recovery semantics enabled.
 
+## Working on this repository
+
+- Run `pytest -q` and `slipstream validate` before declaring a change done.
+- Phase/gate orchestration lives in `slipstream/workflow/`; config loading and prompt assembly live in `slipstream/config/`. Neither may import a concrete backend.
+- Workflow state must stay resumable: persist state before any agent call and after every status change, never block in-process on a human.
+- Personas, skills, and workflows are YAML; keep `personas/_schema.yaml`, `skills/_schema.yaml`, and `workflows/_schema.yaml` in sync with what the loader enforces.
+
 In short: **Slipstream is the control-plane harness; agents and models are replaceable execution workers.**

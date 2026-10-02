@@ -1,4 +1,4 @@
-# Slipstream Vendor-Neutral Operator Update
+# The Slipstream Operator
 
 This package implements the September 2026 **Vendor-Neutral Agent Operator Architecture** target:
 
@@ -22,7 +22,7 @@ The core operator knows only `AgentBackend`, `AgentRequest`, `AgentResult`, evid
 - Direct workspace or isolated git-worktree execution.
 - Compatibility shims for the old `claude_cli.py` and `verify_gate.py` module names.
 - CLI and programmatic examples.
-- Offline regression and adapter tests (26 passing in this build).
+- Offline regression and adapter tests (`pytest -q`).
 
 ## Package layout
 

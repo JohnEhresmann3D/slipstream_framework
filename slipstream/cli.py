@@ -73,17 +73,38 @@ def _launch_from_args(args: argparse.Namespace) -> dict[str, Any]:
         "checks": [[c.name, list(c.command)] for c in args.check or []],
         "max_cost_usd": args.max_cost_usd,
         "timeout_sec": args.timeout_sec,
+        "max_agent_turns": args.max_agent_turns,
     }
+
+
+_BACKEND_SPECIFIC = {
+    "backend": ("backend_executable", "backend_model", "backend_provider"),
+    "verifier_backend": ("verifier_executable", "verifier_model", "verifier_provider"),
+}
 
 
 def _merge_launch(saved: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
     """Saved launch settings, overridden by anything given on this command line."""
     merged = dict(saved)
-    for key, value in _launch_from_args(args).items():
+    given = _launch_from_args(args)
+    # Switching backend kind invalidates options that belonged to the old one
+    # (a pi executable path means nothing to the OpenAI adapter).
+    for kind_key, dependent in _BACKEND_SPECIFIC.items():
+        if given.get(kind_key) and given[kind_key] != saved.get(kind_key):
+            for key in dependent:
+                merged.pop(key, None)
+    for key, value in given.items():
         if value not in (None, []):
             merged[key] = value
     merged.setdefault("backend", "pi")
     return merged
+
+
+def _make_backend(kind: str, options: dict[str, Any]):
+    try:
+        return make_backend(BackendConfig(kind, options))
+    except (TypeError, ValueError) as exc:
+        raise WorkflowError(f"cannot configure {kind!r} backend with {sorted(options)}: {exc}") from exc
 
 
 def _engine(args: argparse.Namespace, launch: dict[str, Any] | None) -> tuple[WorkflowEngine, list]:
@@ -93,18 +114,18 @@ def _engine(args: argparse.Namespace, launch: dict[str, Any] | None) -> tuple[Wo
     worker = verifier = None
     if launch is not None:
         kind = launch.get("backend") or "pi"
-        worker = make_backend(BackendConfig(kind, loop_cli._backend_options(
+        worker = _make_backend(kind, loop_cli._backend_options(
             kind, launch.get("backend_executable"), launch.get("backend_model"),
             launch.get("backend_provider"), None,
-        )))
+        ))
         verifier_kind = launch.get("verifier_backend") or kind
-        verifier_backend = make_backend(BackendConfig(verifier_kind, loop_cli._backend_options(
+        verifier_backend = _make_backend(verifier_kind, loop_cli._backend_options(
             verifier_kind,
             launch.get("verifier_executable") or (launch.get("backend_executable") if verifier_kind == kind else None),
             launch.get("verifier_model") or (launch.get("backend_model") if verifier_kind == kind else None),
             launch.get("verifier_provider") or (launch.get("backend_provider") if verifier_kind == kind else None),
             None,
-        )))
+        ))
         verifier = BackendVerifier(verifier_backend)
         closers = [worker, verifier_backend]
     checks = [CheckSpec(name, tuple(command)) for name, command in (launch or {}).get("checks", [])]
@@ -117,6 +138,7 @@ def _engine(args: argparse.Namespace, launch: dict[str, Any] | None) -> tuple[Wo
         limits=EngineLimits(
             max_cost_usd=(launch or {}).get("max_cost_usd"),
             per_call_timeout_sec=(launch or {}).get("timeout_sec") or 900,
+            max_turns=(launch or {}).get("max_agent_turns"),
         ),
     )
     return engine, closers
@@ -171,7 +193,8 @@ def cmd_workflow_start(args: argparse.Namespace) -> int:
 
 def cmd_workflow_resume(args: argparse.Namespace) -> int:
     saved = _engine(args, None)[0].status(args.id).launch
-    return _with_engine(args, _merge_launch(saved, args), lambda e: e.resume(args.id))
+    launch = _merge_launch(saved, args)
+    return _with_engine(args, launch, lambda e: e.resume(args.id, launch=launch))
 
 
 def cmd_workflow_status(args: argparse.Namespace) -> int:
@@ -190,7 +213,8 @@ def _decide(args: argparse.Namespace, decide) -> int:
     state = decide(engine)
     if not args.continue_:
         return _report(state)
-    return _with_engine(args, _merge_launch(state.launch, args), lambda e: e.resume(args.id))
+    launch = _merge_launch(state.launch, args)
+    return _with_engine(args, launch, lambda e: e.resume(args.id, launch=launch))
 
 
 def cmd_workflow_approve(args: argparse.Namespace) -> int:
@@ -223,6 +247,9 @@ def _add_backend(p: argparse.ArgumentParser) -> None:
                    help="NAME=COMMAND, run in phases with run_checks: true")
     g.add_argument("--max-cost-usd", type=float, help="Budget for the whole workflow run")
     g.add_argument("--timeout-sec", type=int, help="Per agent call timeout")
+    g.add_argument("--max-agent-turns", type=int,
+                   help="Cap on tool-use turns inside one agent call; honored by claude-code, ignored by "
+                        "pi. (A phase's circuit_breaker.max_turns caps worker/verifier rounds.)")
 
 
 def build_parser() -> argparse.ArgumentParser:

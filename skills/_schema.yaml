@@ -1,98 +1,62 @@
 # Skill Definition Schema
-# Skills can be Markdown or YAML files
+# Skills live in skills/<category>/<name>.yaml. `slipstream validate` enforces
+# the required fields; files starting with "_" are ignored.
 
-schema_version: "1.0"
+schema_version: "2.0"
 
-# Markdown skills (like your existing ones)
-markdown_format:
-  description: >
-    Markdown skills use a simple structure with headers.
-    This is the preferred format for human-readable skills.
+required_fields:
+  - name          # Must match the file name (without .yaml)
+  - description   # One or two sentences; shown when the skill is available but not enforced
 
-  required_sections:
-    - "# SKILL: {name}"      # Title with skill name
-    - "## Use When"          # Conditions for applying this skill
-    - "## Rules" or "## Checklist" or "## Process"  # What to do
+optional_fields:
+  - category             # Defaults to the directory name
+  - version
+  - allows               # Actions the skill permits
+  - prohibits            # Actions the skill forbids
+  - requires_inputs
+  - optional_inputs
+  - produces             # Outputs the skill is expected to produce
+  - output_requirements  # Checkable requirements on those outputs
+  - depends_on
+  - failure_conditions   # When to stop and escalate
+  - failure_response     # {action, require_hitl}
+  - hitl                 # {required_for: [...]} actions that need human approval
+  - notes
 
-  optional_sections:
-    - "## Output Format"     # Expected output structure
-    - "## Escalation Triggers"  # When to escalate
-    - "## Tools Strategy"    # Recommended tools
+# How skills reach the model:
+# - Skills listed in a workflow phase's `skills_enforced` are rendered in full
+#   (allows, prohibits, output_requirements, failure_conditions, hitl).
+# - The active persona's other skills appear as one-line descriptions.
+# Preview what an agent sees with:
+#   slipstream prompt --workflow standard --phase execution
 
-  example: |
-    # SKILL: Example Skill
+example:
+  name: example_skill
+  category: core
+  version: v1.0
+  description: Does example things carefully.
+  allows:
+    - do_the_thing
+  prohibits:
+    - skip_verification
+  produces:
+    - example_report
+  output_requirements:
+    - Report lists every assumption
+  failure_conditions:
+    - Inputs are ambiguous
+  hitl:
+    required_for:
+      - Irreversible changes
 
-    ## Use When
-    - Condition A
-    - Condition B
-
-    ## Rules
-    - Rule 1
-    - Rule 2
-
-    ## Output Format
-    - Output item
-
-# YAML skills (for more structured definitions)
-yaml_format:
-  description: >
-    YAML skills provide more structure and metadata.
-    Use for skills that need machine-readable configuration.
-
-  required_fields:
-    - name
-    - description
-    - use_when
-    - rules
-
-  optional_fields:
-    - output_format
-    - escalation_triggers
-    - tools
-    - examples
-    - related_skills
-
-  example:
-    name: "Example Skill"
-    description: "Does example things"
-    use_when:
-      - "Condition A"
-      - "Condition B"
-    rules:
-      - "Rule 1"
-      - "Rule 2"
-    output_format:
-      - "Output item"
-
-# Skill categories
 categories:
-  core:
-    description: "Always-available foundational skills"
-    examples:
-      - deep_researcher
-      - planning_and_scoping
-      - requirements_clarification
+  core: "Always-available foundational skills"
+  quality: "Quality assurance and verification skills"
+  domain: "Project-specific or specialized skills"
 
-  quality:
-    description: "Quality assurance and verification skills"
-    examples:
-      - security_review
-      - test_strategy
-      - code_review_and_refactor_integrity
-      - reliability_and_failure_modes
-      - dependency_and_version_verification
-
-  domain:
-    description: "Project-specific or specialized skills"
-    examples:
-      - sound_design
-      - documentation_handoff
-
-# Skill precedence (from Constitution)
+# When skills conflict, resolve in this order:
 precedence:
-  description: >
-    When skills conflict, resolve in this order:
-    1. Safety/Security skills
-    2. Correctness/Verification skills
-    3. Maintainability skills
-    4. Speed/Convenience skills
+  - "Safety/Security"
+  - "Correctness/Verification"
+  - "Maintainability"
+  - "Speed/Convenience"

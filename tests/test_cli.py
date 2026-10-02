@@ -46,3 +46,22 @@ def test_status_and_approve_work_without_backends(git_repo, capsys):
 
     assert cli.main(["workflow", "approve", "cli1", *location]) == 1
     assert "no gate awaiting approval" in capsys.readouterr().err
+
+
+def test_switching_backend_drops_options_from_the_old_one():
+    args = cli.build_parser().parse_args(["workflow", "resume", "x", "--backend", "claude-code"])
+    saved = {"backend": "pi", "backend_executable": "C:/pi/pi.cmd", "backend_model": "openai-codex/gpt-6-astra",
+             "checks": [["tests", ["pytest"]]]}
+    merged = cli._merge_launch(saved, args)
+    assert merged["backend"] == "claude-code"
+    assert "backend_executable" not in merged and "backend_model" not in merged
+    assert merged["checks"] == [["tests", ["pytest"]]]  # unrelated settings survive
+
+
+def test_bad_backend_options_are_a_clean_error(capsys, git_repo):
+    engine = WorkflowEngine(load_project(REPO), git_repo, worker=ArtifactWorker(), verifier=FakeVerifier())
+    engine.start("Fix it", workflow_id="quick_fix", workflow_run_id="cli2", launch={"backend": "openai", "backend_executable": "pi"})
+    engine.approve("cli2")
+    code = cli.main(["workflow", "resume", "cli2", "--project", str(REPO), "--root", str(git_repo)])
+    assert code == 1
+    assert "cannot configure 'openai' backend" in capsys.readouterr().err

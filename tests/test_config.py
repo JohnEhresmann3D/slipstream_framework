@@ -94,3 +94,66 @@ def test_claude_prompt_goes_on_stdin_not_argv(tmp_path):
     long_prompt = "x" * 40_000 + " é"  # past the Windows command-line limit, non-ASCII
     result = backend.run(AgentRequest(prompt=long_prompt, workspace=tmp_path))
     assert result.text == f"{len(long_prompt)}:False"
+
+
+def test_terminate_tree_kills_grandchildren_holding_pipes(tmp_path):
+    import subprocess
+
+    from slipstream.loop.backends._process import terminate_tree
+
+    # Like pi.cmd -> node: the parent spawns a long-lived child that inherits stdout.
+    parent = tmp_path / "parent.py"
+    parent.write_text(
+        "import subprocess, sys, time\n"
+        "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])\n"
+        "print('started', flush=True)\n"
+        "time.sleep(60)\n",
+        encoding="utf-8",
+    )
+    proc = subprocess.Popen([sys.executable, str(parent)], stdout=subprocess.PIPE, text=True)
+    assert proc.stdout.readline().strip() == "started"
+    terminate_tree(proc)
+    # If the grandchild survived, it would hold the pipe open and this would hang.
+    remaining, _ = proc.communicate(timeout=10)
+    assert remaining == ""
+
+
+@pytest.mark.parametrize(
+    "workflow_yaml, expected",
+    [
+        ("phases: 7\n", "phases must be a list"),
+        (
+            "phases:\n  - {name: a, description: d, agents: [dev], output: o, mode: [parallel]}\n",
+            "mode must be a string",
+        ),
+        (
+            "phases:\n  - {name: a, description: d, agents: [dev], output: o, hitl_gate: true, gate_id: [g]}\n",
+            "gate_id must be a string",
+        ),
+        (
+            "phases:\n  - {name: a, description: d, agents: [dev], output: o, circuit_breaker: {max_turns: 0}}\n",
+            "max_turns must be a positive integer",
+        ),
+        (
+            "phases:\n  - {name: a, description: d, agents: [dev], output: o}\n"
+            "  - {name: b, description: d, agents: [dev], output: o2}\n"
+            "transitions: {a_to_b: true}\n",
+            "transition must be a mapping",
+        ),
+        (
+            "phases:\n  - {name: a, description: d, agents: [dev], output: o}\n"
+            "  - {name: b, description: d, agents: [dev], output: o2}\n"
+            "transitions: {a_to_b: {requires: [hitl_gate_approved]}}\n",
+            "could never pass",
+        ),
+    ],
+)
+def test_malformed_workflows_become_issues_not_crashes(tmp_path, workflow_yaml, expected):
+    _write(tmp_path, "slipstream.yaml", "")
+    _write(tmp_path, "constitution/AI_Engineer_Constitution.md", "# C\n")
+    _write(tmp_path, "skills/core/planning.yaml", "name: planning\ndescription: Plan\n")
+    _write(tmp_path, "personas/dev.yaml", "name: Dev\nrole: r\nskills_required: [planning]\nvoice: {focus: x}\n")
+    _write(tmp_path, "workflows/wf.yaml", "name: wf\ndescription: d\n" + workflow_yaml)
+
+    project = load_project(tmp_path, strict=False)
+    assert any(expected in str(issue) for issue in project.errors), [str(i) for i in project.issues]

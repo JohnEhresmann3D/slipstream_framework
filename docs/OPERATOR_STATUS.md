@@ -18,14 +18,14 @@ This build implements the vendor-neutral architecture as a self-contained Slipst
 | Workspace isolation | Complete | detached git worktree manager with preserve/delete policy |
 | Recovery | Complete | resumes from saved stage without repeating completed worker/evidence/verify stages |
 | Verifier isolation | Complete | semantic verifier receives an isolated temporary snapshot by default |
-| Adapter guide | Complete | `ADAPTER_AUTHORING.md` |
+| Adapter guide | Complete | `docs/ADAPTER_AUTHORING.md` |
 
 ## Validation
 
 The offline suite covers the operator loop, false-success defense, evidence/progress semantics, worker and verifier budget behavior, backend failure classification, recovery checkpoints, workspace isolation, provider-independence, Claude Code parsing/timeout/resume, and Pi RPC text/usage/session-file resume/timeout.
 
-Final validation for this artifact: **26 tests passed** with `pytest -q`, plus successful `python -m compileall` of package and tests.
+When first delivered, the operator's offline suite was 26 tests. The full suite now also covers the config loader, the workflow engine and the CLI; run `pytest -q`.
 
 ## Source-package limitation
 
-The technical architecture PDF was recoverable, but the original `slipstream_operator_loop.zip` attachment from the prior conversation was not exposed to this execution environment. This build therefore targets the module names, behaviors, gaps, migration plan, and acceptance conditions documented in that PDF. See `MIGRATION_NOTES.md` before merging into the older archive.
+The technical architecture PDF was recoverable, but the original `slipstream_operator_loop.zip` attachment from the prior conversation was not exposed to this execution environment. This build therefore targets the module names, behaviors, gaps, migration plan, and acceptance conditions documented in that PDF. See `OPERATOR_MIGRATION_NOTES.md`.

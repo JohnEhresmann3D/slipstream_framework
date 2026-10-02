@@ -171,7 +171,8 @@ def _load_personas(
             issues.append(Issue("warning", where, f"role constitution not found: {_rel(root, role_path)}"))
 
         research = data.get("research_mandate") if isinstance(data.get("research_mandate"), dict) else {}
-        triggers = [t for t in research.get("triggers", []) or [] if isinstance(t, dict)]
+        raw_triggers = research.get("triggers")
+        triggers = [t for t in raw_triggers if isinstance(t, dict)] if isinstance(raw_triggers, list) else []
         responsibilities = data.get("responsibilities") if isinstance(data.get("responsibilities"), dict) else {}
         voice = data.get("voice") if isinstance(data.get("voice"), dict) else {}
         personas[persona_id] = Persona(
@@ -188,6 +189,37 @@ def _load_personas(
             role_constitution_path=role_path,
         )
     return personas
+
+
+def _phase_shape_issues(raw: dict[str, Any], at: str) -> tuple[dict[str, Any], list[Issue]]:
+    """Check scalar types so bad YAML becomes an Issue instead of a crash.
+
+    Returns a copy of the phase with invalid values dropped.
+    """
+    data = dict(raw)
+    issues: list[Issue] = []
+    for key in ("gate_id", "gate_description", "mode", "output", "name", "description"):
+        if key in data and data[key] is not None and not isinstance(data[key], (str, int, float)):
+            issues.append(Issue("error", at, f"{key} must be a string"))
+            data.pop(key)
+    for key in ("hitl_gate", "run_checks"):
+        if key in data and not isinstance(data[key], bool):
+            issues.append(Issue("error", at, f"{key} must be true or false"))
+            data.pop(key)
+    breaker = data.get("circuit_breaker")
+    if breaker is not None:
+        if not isinstance(breaker, dict):
+            issues.append(Issue("error", at, "circuit_breaker must be a mapping"))
+            data.pop("circuit_breaker")
+        else:
+            clean = dict(breaker)
+            for key in ("max_turns", "stall_threshold"):
+                value = clean.get(key)
+                if value is not None and (isinstance(value, bool) or not isinstance(value, int) or value < 1):
+                    issues.append(Issue("error", at, f"circuit_breaker.{key} must be a positive integer"))
+                    clean.pop(key)
+            data["circuit_breaker"] = clean
+    return data, issues
 
 
 def _parse_phase(data: dict[str, Any]) -> Phase:
@@ -243,12 +275,18 @@ def _load_workflows(
 
         phases: list[Phase] = []
         seen_gates: set[str] = set()
-        for index, raw in enumerate(data.get("phases") or []):
+        raw_phases = data.get("phases") or []
+        if not isinstance(raw_phases, list):
+            issues.append(Issue("error", where, "phases must be a list"))
+            raw_phases = []
+        for index, raw in enumerate(raw_phases):
             if not isinstance(raw, dict):
                 issues.append(Issue("error", where, f"phase #{index + 1} must be a mapping"))
                 continue
+            at = f"{where}: phase {str(raw.get('name') or index + 1)!r}"
+            raw, shape_issues = _phase_shape_issues(raw, at)
+            issues.extend(shape_issues)
             phase = _parse_phase(raw)
-            at = f"{where}: phase {phase.name or index + 1!r}"
             if not phase.name or not phase.description:
                 issues.append(Issue("error", at, "phase needs a name and a description"))
             if any(p.name == phase.name for p in phases):
@@ -280,8 +318,13 @@ def _load_workflows(
         names = [p.name for p in phases]
         transitions: list[Transition] = []
         raw_transitions = data.get("transitions") if isinstance(data.get("transitions"), dict) else {}
+        if data.get("transitions") is not None and not isinstance(data.get("transitions"), dict):
+            issues.append(Issue("error", where, "transitions must be a mapping"))
         for key, spec in raw_transitions.items():
             at = f"{where}: transition {key!r}"
+            if spec is not None and not isinstance(spec, dict):
+                issues.append(Issue("error", at, "transition must be a mapping with a requires list"))
+                continue
             source, sep, target = str(key).partition("_to_")
             if not sep or source not in names or (target not in names and target != "complete"):
                 issues.append(Issue("error", at, "must be named <phase>_to_<phase|complete>"))
@@ -295,6 +338,12 @@ def _load_workflows(
                         "error", at,
                         f"unknown requirement {requirement!r}; use one of {sorted(TRANSITION_REQUIREMENTS)}",
                     ))
+            source_phase = next(p for p in phases if p.name == source)
+            if "hitl_gate_approved" in requires and not source_phase.hitl_gate:
+                issues.append(Issue(
+                    "error", at,
+                    f"requires hitl_gate_approved but phase {source!r} has no hitl_gate, so it could never pass",
+                ))
             transitions.append(Transition(source, target, requires))
 
         workflow_id = str(data.get("name") or path.stem)
