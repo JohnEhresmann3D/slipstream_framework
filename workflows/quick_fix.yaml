@@ -48,6 +48,7 @@ phases:
       - test_strategy
 
     moral_gate: required
+    run_checks: true
 
     output: implementation
 
@@ -67,6 +68,7 @@ phases:
       - test_strategy
 
     output: verification_report
+    run_checks: true
 
     checklist:
       - "Fix addresses the issue"

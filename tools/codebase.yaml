@@ -22,6 +22,11 @@ tools:
         - "Use regex for complex patterns"
         - "Combine with file_read for context"
 
+  file_read:
+    description: "Read a file (non-code documents, configs, artifacts)"
+    rate_limit:
+      calls_per_hour: 200
+
   codebase_read:
     description: "Read file contents"
     rate_limit:

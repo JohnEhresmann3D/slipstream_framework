@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slipstream"
+version = "0.1.0.dev0"
+description = "Vendor-neutral agent orchestration: personas, phase workflows, human gates, and an evidence-verified operator loop"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = ["pyyaml>=6"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+openai = ["openai>=1.0"]
+
+[project.scripts]
+slipstream = "slipstream.cli:main"
+slipstream-operator = "slipstream.loop.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["slipstream*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

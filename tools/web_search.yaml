@@ -1,0 +1,20 @@
+# Web Search Tool Configuration
+# For quick factual lookups
+
+name: web_search
+description: "Search the web for quick factual lookups"
+type: native
+
+rate_limit:
+  calls_per_hour: 15
+  reason: "Cheap, but results still need verification"
+
+usage:
+  when_to_use:
+    - "Quick factual lookups"
+    - "Finding the right documentation page to fetch"
+    - "Checking current versions or release dates"
+
+  when_not_to_use:
+    - "Multi-source research (use deepsearch)"
+    - "Reading a known page (use web_fetch)"

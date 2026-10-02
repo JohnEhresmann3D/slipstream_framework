@@ -115,6 +115,7 @@ phases:
       - code_review_and_refactor_integrity
 
     moral_gate: required
+    run_checks: true  # project --check commands must pass
 
     output: implementation
 
@@ -144,6 +145,7 @@ phases:
       - test_strategy
 
     output: completion_report
+    run_checks: true
 
     checklist:
       - "All acceptance criteria verified"
@@ -153,21 +155,22 @@ phases:
       - "Handoff notes written"
 
 # Transition rules
+# The engine checks these before advancing. Vocabulary:
+#   phase_done          - the phase's operator run finished with verdict MET
+#   artifact_exists     - the phase wrote its output artifact
+#   hitl_gate_approved  - a human approved the phase's gate
 transitions:
   intake_to_research:
-    requires: [hitl_gate_approved]
-    creates: [session_context]
+    requires: [phase_done, artifact_exists, hitl_gate_approved]
 
   research_to_powwow:
-    requires: [research_artifacts_exist]
-    auto_transition: true
+    requires: [phase_done, artifact_exists]
 
   powwow_to_execution:
-    requires: [hitl_gate_approved, plan_exists]
+    requires: [phase_done, artifact_exists, hitl_gate_approved]
 
   execution_to_handoff:
-    requires: [implementation_complete]
-    auto_transition: true
+    requires: [phase_done, artifact_exists]
 
   handoff_to_complete:
-    requires: [hitl_gate_approved]
+    requires: [phase_done, artifact_exists, hitl_gate_approved]

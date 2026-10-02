@@ -1,0 +1,29 @@
+Slipstream Vendor-Neutral Operator Update - Validation Report
+Date: 2026-09-03 (user local date)
+
+Commands:
+  pytest -q
+  python -m compileall -q slipstream tests
+  python -m slipstream.loop.cli --help
+
+Result:
+  26 passed
+  compileall: success
+  CLI parser/help: success
+
+Key regression coverage:
+  - provider-neutral operator import boundary
+  - deterministic false-success veto
+  - evidence-based no-progress detection
+  - real-progress detection despite similar prose
+  - bounded worker/verifier budget preflight
+  - reported budget breach -> ERROR
+  - unknown cost status remains UNKNOWN
+  - worker backend error limit -> ERROR
+  - required capability preflight
+  - verifier failure handling
+  - recovery from saved checkpoints
+  - git worktree isolation
+  - verifier workspace snapshot isolation
+  - Claude Code JSON/session/timeout normalization
+  - Pi RPC JSONL/session-file resume/usage/timeout normalization
